@@ -1,30 +1,34 @@
-# Open Carrusel
+# Open Carrusel 2.0
 
-Local-first app to create, edit, export, publish, and schedule Instagram carousels with AI.
+Open Carrusel 2.0 es una app local-first para crear, editar, exportar, publicar y programar carruseles de Instagram con IA.
 
-This community-ready copy is sanitized:
-- no personal carousels
-- no uploads
-- no webhook URLs
-- no API keys
-- no local Claude settings
+Está inspirada en el proyecto original [Open Carrusel](https://github.com/Hainrixz/open-carrusel) de Hainrixz, y esta versión comunitaria viene preparada para arrancar limpia, sin datos personales ni configuraciones privadas.
 
-## What is included
+## Incluye
 
-- Next.js app
-- Editor, preview, export, publish, schedule
-- Templates system
-- Brand configuration
-- Docker support
-- Claude/Codex integration hooks
-- Clean local data store
+- generación de slides con IA
+- editor con preview en vivo
+- exportación de imágenes
+- publicación en Instagram vía Make
+- programación de posteos
+- caption automático editable o regenerable
+- templates
+- branding
+- filtros de dashboard y vista lista/tarjetas
+- soporte Docker
 
-## Quick start
+## Quickstart
 
-1. Install Node.js 20+.
-2. Clone or unzip this folder.
-3. Open a terminal in the project root.
-4. Run:
+### Requisitos
+
+- Node.js 20+
+- npm
+- opcional: Docker
+- opcional: Claude Code CLI
+- opcional: OpenAI API key
+- opcional: Make + Instagram Business
+
+### Instalación local
 
 ```bash
 npm install
@@ -32,43 +36,47 @@ npm run setup
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000)
+Abrí:
 
-## Full setup guide
+- [http://localhost:3000](http://localhost:3000)
 
-See [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md).
+### Instalación con Docker
 
-That guide covers:
-- local setup
-- Docker setup
-- Claude Code / Codex setup
-- brand setup
-- Instagram publishing setup with Make
-- scheduling behavior
-- file locations
-- troubleshooting
-
-## Environment variables
-
-Copy `.env.example` to `.env` if you want Docker publishing / Codex support:
+1. Copiá `.env.example` a `.env`
+2. Configurá lo que necesites
+3. Ejecutá:
 
 ```bash
-cp .env.example .env
+docker compose up -d --build open-carrusel
 ```
 
-On Windows PowerShell:
+Abrí:
 
-```powershell
-Copy-Item .env.example .env
-```
+- [http://127.0.0.1:3002](http://127.0.0.1:3002)
 
-## Notes
+## Guía completa
 
-- `scripts/setup.mjs` seeds clean local data files automatically.
-- `public/uploads/` stores logos and reference images.
-- `data/` stores carousels, templates, exports, and integrations.
-- Scheduled publishing requires the app/server to be running.
+Ver:
 
-## License
+- [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md)
+
+Incluye:
+
+- setup local
+- setup Docker
+- Claude / Codex
+- Make + Instagram
+- scheduler local
+- troubleshooting
+- cómo compartir una copia limpia
+
+## Notas
+
+- `scripts/setup.mjs` crea los archivos base en `data/`
+- `public/uploads/` guarda logos e imágenes de referencia
+- `data/` guarda carousels, templates, exports e integraciones
+- las publicaciones programadas requieren que la app siga corriendo
+
+## Licencia
 
 MIT
