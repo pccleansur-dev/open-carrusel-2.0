@@ -1,26 +1,32 @@
 import { NextResponse } from "next/server";
-import { getPreset, deletePreset } from "@/lib/style-presets";
+import {
+  deleteStylePresetUseCase,
+  getStylePresetUseCase,
+} from "@/application/style-presets";
+import { handleRouteError } from "@/app/api/_shared/responses";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const preset = await getPreset(id);
-  if (!preset) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const preset = await getStylePresetUseCase(id);
+    return NextResponse.json(preset);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json(preset);
 }
 
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const deleted = await deletePreset(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const result = await deleteStylePresetUseCase(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json({ success: true });
 }

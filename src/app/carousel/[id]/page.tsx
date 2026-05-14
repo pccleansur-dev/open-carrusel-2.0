@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, use } from "react";
+import { useState, useCallback, useRef, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2, Grid3X3, Bookmark, Maximize2 } from "lucide-react";
+import {
+  Trash2,
+  Grid3X3,
+  Bookmark,
+  Maximize2,
+  CheckCircle2,
+  ExternalLink,
+} from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -12,10 +19,12 @@ import { CarouselPreview } from "@/components/editor/CarouselPreview";
 import { SlideFilmstrip } from "@/components/editor/SlideFilmstrip";
 import { AspectRatioSelector } from "@/components/editor/AspectRatioSelector";
 import { ExportButton } from "@/components/editor/ExportButton";
+import { PublishButton } from "@/components/editor/PublishButton";
+import { ScheduleButton } from "@/components/editor/ScheduleButton";
 import { CaptionPanel } from "@/components/editor/CaptionPanel";
-import { SafeZoneOverlay } from "@/components/editor/SafeZoneOverlay";
 import { FullscreenPreview } from "@/components/editor/FullscreenPreview";
-import type { Carousel, AspectRatio } from "@/types/carousel";
+import type { AspectRatio } from "@/types/carousel";
+import { useCarouselEditor } from "@/hooks/use-carousel-editor";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -24,14 +33,28 @@ interface PageProps {
 export default function CarouselEditorPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const [carousel, setCarousel] = useState<Carousel | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [claudeAvailable, setClaudeAvailable] = useState(true);
   const [chatOpen, setChatOpen] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [showSafeZones, setShowSafeZones] = useState(false);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const {
+    activeSlide,
+    carousel,
+    deleteCarousel,
+    deleteSlide,
+    handleStreamEnd,
+    handleStreamStart,
+    isGenerating,
+    notFound,
+    refreshCarousel,
+    renameCarousel,
+    reorderSlides,
+    saveTemplate,
+    setActiveSlide,
+    undoSlide,
+    updateAspectRatio,
+  } = useCarouselEditor(id, {
+    onDeleteSuccess: () => router.push("/"),
+  });
 
   // Confirm dialog state
   const [confirmState, setConfirmState] = useState<{
@@ -44,67 +67,8 @@ export default function CarouselEditorPage({ params }: PageProps) {
   // Ref for focusing chat input when + button is clicked
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const fetchCarousel = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/carousels/${id}`);
-      if (res.status === 404) {
-        setNotFound(true);
-        return;
-      }
-      if (res.ok) {
-        const data = await res.json();
-        setCarousel((prev) => {
-          // If new slides were added during generation, jump to the latest slide
-          if (prev && data.slides.length > prev.slides.length) {
-            setActiveSlide(data.slides.length - 1);
-          } else {
-            setActiveSlide((prevIdx) =>
-              data.slides.length === 0 ? 0 : Math.min(prevIdx, data.slides.length - 1)
-            );
-          }
-          return data;
-        });
-      }
-    } catch {
-      // ignore network errors
-    }
-  }, [id]);
-
-  // Initial data load
-  useEffect(() => {
-    const load = async () => {
-      await fetchCarousel();
-      try {
-        const res = await fetch("/api/chat/check");
-        const data: { available?: boolean } = await res.json();
-        if (data.available === false) setClaudeAvailable(false);
-      } catch {
-        // assume available
-      }
-    };
-    load();
-  }, [fetchCarousel]);
-
-  // Poll for carousel updates while AI is generating slides
-  useEffect(() => {
-    if (!isGenerating) return;
-    const interval = setInterval(() => {
-      fetchCarousel();
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isGenerating, fetchCarousel]);
-
   const handleAspectChange = async (ratio: AspectRatio) => {
-    if (!carousel) return;
-    const res = await fetch(`/api/carousels/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ aspectRatio: ratio }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
-      setCarousel(updated);
-    }
+    await updateAspectRatio(ratio);
   };
 
   const handleDeleteSlide = (slideId: string) => {
@@ -115,19 +79,13 @@ export default function CarouselEditorPage({ params }: PageProps) {
       title: `Delete slide ${slideIndex + 1}?`,
       description: "This action cannot be undone.",
       onConfirm: async () => {
-        const res = await fetch(`/api/carousels/${id}/slides/${slideId}`, {
-          method: "DELETE",
-        });
-        if (res.ok) await fetchCarousel();
+        await deleteSlide(slideId);
       },
     });
   };
 
   const handleUndoSlide = async (slideId: string) => {
-    const res = await fetch(`/api/carousels/${id}/slides/${slideId}/undo`, {
-      method: "POST",
-    });
-    if (res.ok) await fetchCarousel();
+    await undoSlide(slideId);
   };
 
   const handleDeleteCarousel = useCallback(() => {
@@ -137,31 +95,16 @@ export default function CarouselEditorPage({ params }: PageProps) {
       title: `Delete "${carousel.name}"?`,
       description: "This will permanently delete the carousel and all its slides.",
       onConfirm: async () => {
-        const res = await fetch(`/api/carousels/${id}`, { method: "DELETE" });
-        if (res.ok) router.push("/");
+        await deleteCarousel();
       },
     });
-  }, [carousel, id, router]);
-
-  const handleStreamStart = useCallback(() => {
-    setIsGenerating(true);
-  }, []);
-
-  const handleStreamEnd = useCallback(() => {
-    setIsGenerating(false);
-    fetchCarousel();
-  }, [fetchCarousel]);
+  }, [carousel, deleteCarousel]);
 
   const handleReorderSlides = useCallback(
     async (slideIds: string[]) => {
-      await fetch(`/api/carousels/${id}/slides`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slideIds }),
-      });
-      await fetchCarousel();
+      await reorderSlides(slideIds);
     },
-    [id, fetchCarousel]
+    [reorderSlides]
   );
 
   const handleAddSlideRequest = useCallback(() => {
@@ -200,17 +143,7 @@ export default function CarouselEditorPage({ params }: PageProps) {
         title={carousel.name}
         showBack
         editable
-        onTitleChange={async (name) => {
-          const res = await fetch(`/api/carousels/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name }),
-          });
-          if (res.ok) {
-            const updated = await res.json();
-            setCarousel(updated);
-          }
-        }}
+        onTitleChange={renameCarousel}
       />
 
       {/* Fullscreen preview */}
@@ -241,7 +174,6 @@ export default function CarouselEditorPage({ params }: PageProps) {
           <div className="oc-fade w-80 border-r border-border shrink-0 flex flex-col bg-surface">
             <ChatPanel
               carouselId={id}
-              claudeAvailable={claudeAvailable}
               referenceImages={carousel.referenceImages || []}
               onStreamStart={handleStreamStart}
               onStreamEnd={handleStreamEnd}
@@ -283,11 +215,7 @@ export default function CarouselEditorPage({ params }: PageProps) {
               variant="ghost"
               size="sm"
               onClick={async () => {
-                await fetch("/api/templates", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ carouselId: carousel.id }),
-                });
+                await saveTemplate(carousel.id);
               }}
               className="text-muted-foreground"
               aria-label="Save as template"
@@ -314,6 +242,51 @@ export default function CarouselEditorPage({ params }: PageProps) {
               carouselId={carousel.id}
               slideCount={carousel.slides.length}
             />
+            {carousel.postedAt ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700"
+                  title={`Publicado el ${new Date(carousel.postedAt).toLocaleString()}`}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Publicado</span>
+                </div>
+                {carousel.publishedPostUrl ? (
+                  <a
+                    href={carousel.publishedPostUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+                    title="Abrir post publicado"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Ver post</span>
+                  </a>
+                ) : carousel.publishedPostId ? (
+                  <span
+                    className="max-w-40 truncate text-[11px] font-mono text-muted-foreground"
+                    title={carousel.publishedPostId}
+                  >
+                    {carousel.publishedPostId}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            <ScheduleButton
+              carouselId={carousel.id}
+              slideCount={carousel.slides.length}
+              hasCaption={!!carousel.caption}
+              scheduledAt={carousel.scheduledAt}
+              onScheduled={refreshCarousel}
+            />
+            <PublishButton
+              carouselId={carousel.id}
+              slideCount={carousel.slides.length}
+              hasCaption={!!carousel.caption}
+              hasBeenPublished={!!carousel.postedAt}
+              isScheduled={!!carousel.scheduledAt}
+              onPublished={refreshCarousel}
+            />
           </div>
 
           {/* Carousel preview */}
@@ -327,8 +300,10 @@ export default function CarouselEditorPage({ params }: PageProps) {
 
           {/* Caption panel */}
           <CaptionPanel
+            carouselId={carousel.id}
             caption={carousel.caption}
             hashtags={carousel.hashtags}
+            onUpdated={refreshCarousel}
           />
         </div>
       </div>

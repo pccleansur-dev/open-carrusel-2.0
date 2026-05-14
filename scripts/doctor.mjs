@@ -72,10 +72,10 @@ if (existsSync("node_modules") && statSync("node_modules").isDirectory()) {
 }
 
 // 4. Data files
-const dataFiles = ["brand.json", "carousels.json", "templates.json", "staged-actions.json", "style-presets.json"];
+const dataFiles = ["brand.json", "carousels.json", "integrations.json", "templates.json", "staged-actions.json", "style-presets.json"];
 const missingData = dataFiles.filter((f) => !existsSync(join("data", f)));
 if (missingData.length === 0) {
-  add(CHECK, "Data files", "all 5 seeded");
+  add(CHECK, "Data files", `all ${dataFiles.length} seeded`);
 } else if (missingData.length === dataFiles.length) {
   add(FAIL, "Data files", "none seeded — run `/start` or `npm run setup`", true);
 } else {

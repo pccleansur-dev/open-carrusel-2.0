@@ -1,43 +1,48 @@
 import { NextResponse } from "next/server";
-import { getCarousel, updateCarousel } from "@/lib/carousels";
+import {
+  generateCaptionUseCase,
+  getCaptionUseCase,
+  updateCaptionUseCase,
+} from "@/application/carousels";
+import { parseCaptionUpdateInput } from "@/contracts/carousels";
+import { handleRouteError } from "@/app/api/_shared/responses";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const carousel = await getCarousel(id);
-  if (!carousel) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const result = await getCaptionUseCase(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json({
-    caption: carousel.caption || "",
-    hashtags: carousel.hashtags || [],
-  });
 }
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
-    const body = await request.json();
-    const { caption, hashtags } = body as {
-      caption?: string;
-      hashtags?: string[];
-    };
+    const { id } = await params;
+    const updates = parseCaptionUpdateInput(await request.json());
+    const result = await updateCaptionUseCase(id, updates);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}
 
-    const updated = await updateCarousel(id, { caption, hashtags });
-    if (!updated) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      caption: updated.caption || "",
-      hashtags: updated.hashtags || [],
-    });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const result = await generateCaptionUseCase(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleRouteError(error);
   }
 }

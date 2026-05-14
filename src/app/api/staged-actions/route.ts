@@ -1,59 +1,22 @@
 import { NextResponse } from "next/server";
-import { listStagedActions, createStagedAction } from "@/lib/staged-actions";
-import type { StagedActionType } from "@/types/staged-action";
+import {
+  createStagedActionUseCase,
+  listStagedActionsUseCase,
+} from "@/application/staged-actions";
+import { handleRouteError } from "@/app/api/_shared/responses";
+import { parseCreateStagedActionInput } from "@/contracts/staged-actions";
 
 export async function GET() {
-  const actions = await listStagedActions();
+  const actions = await listStagedActionsUseCase();
   return NextResponse.json({ actions });
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { type, fileName, content, description, carouselId, autoExecute } =
-      body as {
-        type?: StagedActionType;
-        fileName?: string;
-        content?: string;
-        description?: string;
-        carouselId?: string;
-        autoExecute?: boolean;
-      };
-
-    // Only allow export_png type (security constraint)
-    if (type !== "export_png") {
-      return NextResponse.json(
-        { error: 'Only "export_png" action type is allowed' },
-        { status: 400 }
-      );
-    }
-
-    if (!fileName || !content || !description || !carouselId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file extension
-    if (!fileName.endsWith(".png")) {
-      return NextResponse.json(
-        { error: "Only .png files are allowed" },
-        { status: 400 }
-      );
-    }
-
-    const action = await createStagedAction({
-      type,
-      fileName,
-      content,
-      description,
-      carouselId,
-      autoExecute,
-    });
-
+    const input = parseCreateStagedActionInput(await request.json());
+    const action = await createStagedActionUseCase(input);
     return NextResponse.json({ action }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    return handleRouteError(error);
   }
 }

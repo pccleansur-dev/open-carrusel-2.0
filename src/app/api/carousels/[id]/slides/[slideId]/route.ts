@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
-import { updateSlide, deleteSlide } from "@/lib/carousels";
+import {
+  deleteSlideUseCase,
+  updateSlideUseCase,
+} from "@/application/carousels";
+import { parseUpdateSlideInput } from "@/contracts/carousels";
+import { handleRouteError } from "@/app/api/_shared/responses";
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; slideId: string }> }
 ) {
-  const { id, slideId } = await params;
   try {
-    const body = await request.json();
-    const slide = await updateSlide(id, slideId, body);
-    if (!slide) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
+    const { id, slideId } = await params;
+    const updates = parseUpdateSlideInput(await request.json());
+    const slide = await updateSlideUseCase(id, slideId, updates);
     return NextResponse.json(slide);
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    return handleRouteError(error);
   }
 }
 
@@ -22,10 +24,11 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string; slideId: string }> }
 ) {
-  const { id, slideId } = await params;
-  const deleted = await deleteSlide(id, slideId);
-  if (!deleted) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id, slideId } = await params;
+    const result = await deleteSlideUseCase(id, slideId);
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json({ success: true });
 }

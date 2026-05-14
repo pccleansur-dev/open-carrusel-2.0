@@ -1,35 +1,22 @@
 import { NextResponse } from "next/server";
-import { listPresets, createPreset } from "@/lib/style-presets";
+import {
+  createStylePresetUseCase,
+  listStylePresetsUseCase,
+} from "@/application/style-presets";
+import { handleRouteError } from "@/app/api/_shared/responses";
+import { parseCreateStylePresetInput } from "@/contracts/style-presets";
 
 export async function GET() {
-  const presets = await listPresets();
+  const presets = await listStylePresetsUseCase();
   return NextResponse.json({ presets });
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, description, brand, designRules, exampleSlideHtml, aspectRatio, tags } = body;
-
-    if (!name || !designRules) {
-      return NextResponse.json(
-        { error: "name and designRules are required" },
-        { status: 400 }
-      );
-    }
-
-    const preset = await createPreset({
-      name,
-      description: description || "",
-      brand: brand || {},
-      designRules,
-      exampleSlideHtml: exampleSlideHtml || "",
-      aspectRatio: aspectRatio || "4:5",
-      tags: tags || [],
-    });
-
+    const input = parseCreateStylePresetInput(await request.json());
+    const preset = await createStylePresetUseCase(input);
     return NextResponse.json(preset, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    return handleRouteError(error);
   }
 }

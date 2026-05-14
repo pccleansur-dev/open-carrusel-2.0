@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { undoSlide } from "@/lib/carousels";
+import { undoSlideUseCase } from "@/application/carousels";
+import { handleRouteError } from "@/app/api/_shared/responses";
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string; slideId: string }> }
 ) {
-  const { id, slideId } = await params;
-  const slide = await undoSlide(id, slideId);
-  if (!slide) {
-    return NextResponse.json(
-      { error: "Not found or no previous versions" },
-      { status: 404 }
-    );
+  try {
+    const { id, slideId } = await params;
+    const slide = await undoSlideUseCase(id, slideId);
+    return NextResponse.json(slide);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json(slide);
 }

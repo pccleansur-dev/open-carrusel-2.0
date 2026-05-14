@@ -1,0 +1,34 @@
+services:
+  open-carrusel:
+    build: .
+    ports:
+      - "3002:3000"
+    volumes:
+      # Persist user data (carousels, brand config, exports) on the host
+      - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
+      # Claude auth
+      - ${USERPROFILE}/.claude:/run/claude-host/claude-dir:ro
+      - ${USERPROFILE}/.claude.json:/run/claude-host/claude.json:ro
+      # Codex auth (config.toml with api_key)
+      - ${USERPROFILE}/.codex:/run/codex-host/codex-dir:ro
+    environment:
+      - NODE_ENV=production
+      # Override the Windows path baked into .env.local
+      - CLAUDE_CLI_PATH=/usr/local/bin/claude
+      - CODEX_CLI_PATH=/usr/local/bin/codex
+      # OpenAI API key — required for Codex inside Docker (OAuth no funciona en Linux)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Instagram publish via Make → Telegraph → Instagram
+      - MAKE_INSTAGRAM_WEBHOOK=${MAKE_INSTAGRAM_WEBHOOK}
+      - IG_USER_ID=${IG_USER_ID}
+      # Set AI_PROVIDER=codex to use Codex instead of Claude (default: auto = prefers Claude)
+      - AI_PROVIDER=${AI_PROVIDER:-auto}
+      # Optional: override the Codex model (e.g. o3, o4-mini)
+      - CODEX_MODEL=${CODEX_MODEL:-}
+    # Increase shared memory so Chromium doesn't crash during PNG export
+    shm_size: 256mb
+    # Allow Codex to run shell commands inside Docker (bwrap needs unconfined seccomp)
+    security_opt:
+      - seccomp:unconfined
+    restart: unless-stopped

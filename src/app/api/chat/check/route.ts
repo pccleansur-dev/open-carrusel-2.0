@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { isClaudeAvailable } from "@/lib/claude-path";
+import { getChatProviderStatus } from "@/application/chat";
 
 export async function GET() {
-  return NextResponse.json({ available: isClaudeAvailable() });
+  const providerInfo = await getChatProviderStatus();
+  return NextResponse.json(providerInfo);
 }

@@ -102,6 +102,11 @@ function seedDataFiles() {
       updatedAt: "",
     },
     "carousels.json": { carousels: [] },
+    "integrations.json": {
+      makeWebhookUrl: "",
+      igUserId: "",
+      updatedAt: "",
+    },
     "templates.json": { templates: [] },
     "staged-actions.json": { actions: [] },
     "style-presets.json": { presets: [] },

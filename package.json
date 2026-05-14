@@ -15,7 +15,7 @@
     "setup": "node scripts/setup.mjs",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.mjs",
     "lint": "eslint",
     "doctor": "node scripts/doctor.mjs"
   },

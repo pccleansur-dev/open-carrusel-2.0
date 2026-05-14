@@ -5,7 +5,7 @@ export interface StylePreset {
   id: string;
   name: string;
   description: string;
-  brand: BrandConfig;
+  brand: Partial<BrandConfig>;
   designRules: string;
   exampleSlideHtml: string;
   aspectRatio: AspectRatio;

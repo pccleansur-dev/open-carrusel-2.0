@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlideRenderer } from "./SlideRenderer";
@@ -23,10 +23,11 @@ export function CarouselPreview({
   showSafeZones = false,
 }: CarouselPreviewProps) {
   const slide = slides[activeIndex];
-  const prevIndexRef = useRef(activeIndex);
-  const direction = activeIndex >= prevIndexRef.current ? 12 : -12;
+  const [previousActiveIndex, setPreviousActiveIndex] = useState(activeIndex);
+  const direction = activeIndex >= previousActiveIndex ? 12 : -12;
+
   useEffect(() => {
-    prevIndexRef.current = activeIndex;
+    setPreviousActiveIndex(activeIndex);
   }, [activeIndex]);
 
   if (!slide) {

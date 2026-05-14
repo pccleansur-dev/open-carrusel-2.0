@@ -46,8 +46,10 @@ next-env.d.ts
 
 # audit / tooling artifacts
 .playwright-cli/
+.playwright-mcp/
 open-carrusel*.log
 /.next/cache/
+.claude/settings.local.json
 
 # OS
 Thumbs.db

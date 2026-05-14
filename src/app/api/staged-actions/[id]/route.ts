@@ -1,37 +1,34 @@
 import { NextResponse } from "next/server";
-import { getStagedAction, updateStagedActionStatus } from "@/lib/staged-actions";
+import {
+  getStagedActionUseCase,
+  rejectStagedActionUseCase,
+} from "@/application/staged-actions";
+import { handleRouteError } from "@/app/api/_shared/responses";
+import { parsePatchStagedActionInput } from "@/contracts/staged-actions";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const action = await getStagedAction(id);
-  if (!action) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const action = await getStagedActionUseCase(id);
+    return NextResponse.json(action);
+  } catch (error) {
+    return handleRouteError(error);
   }
-  return NextResponse.json(action);
 }
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
-    const body = await request.json();
-    const { status } = body as { status?: string };
-
-    if (status === "rejected") {
-      const updated = await updateStagedActionStatus(id, "rejected");
-      if (!updated) {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-      return NextResponse.json(updated);
-    }
-
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    const { id } = await params;
+    parsePatchStagedActionInput(await request.json());
+    const updated = await rejectStagedActionUseCase(id);
+    return NextResponse.json(updated);
+  } catch (error) {
+    return handleRouteError(error);
   }
 }
