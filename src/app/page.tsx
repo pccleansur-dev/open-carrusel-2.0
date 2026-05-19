@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -15,6 +15,8 @@ import {
   LayoutGrid,
   List,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,7 @@ import type { Carousel } from "@/types/carousel";
 
 type DashboardTab = "carousels" | "templates" | "posted";
 type CarouselStatusFilter = "all" | "draft" | "scheduled" | "posted";
-type CarouselViewMode = "cards" | "list";
+type CarouselViewMode = "cards" | "list" | "calendar";
 
 function getCarouselStatus(carousel: Carousel): CarouselStatusFilter {
   if (carousel.postedAt) return "posted";
@@ -45,6 +47,25 @@ function formatScheduledAt(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function getMonthStart(value: Date) {
+  return new Date(value.getFullYear(), value.getMonth(), 1);
+}
+
+function getMonthKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth()).padStart(2, "0")}`;
+}
+
+function formatCalendarMonth(value: Date) {
+  return value.toLocaleDateString("es-AR", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatCalendarDay(value: Date) {
+  return value.toLocaleDateString("en-CA");
 }
 
 export default function DashboardPage() {
@@ -85,12 +106,52 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("carousels");
   const [carouselStatusFilter, setCarouselStatusFilter] = useState<CarouselStatusFilter>("all");
   const [carouselViewMode, setCarouselViewMode] = useState<CarouselViewMode>("cards");
+  const [calendarMonth, setCalendarMonth] = useState(() => getMonthStart(new Date()));
   const postedCarousels = carousels
     .filter((carousel) => !!carousel.postedAt)
     .sort((a, b) => new Date(b.postedAt ?? 0).getTime() - new Date(a.postedAt ?? 0).getTime());
   const filteredCarousels = carousels.filter((carousel) =>
     carouselStatusFilter === "all" ? true : getCarouselStatus(carousel) === carouselStatusFilter
   );
+  const scheduledCarousels = carousels
+    .filter((carousel) => !!carousel.scheduledAt && !carousel.postedAt)
+    .sort((a, b) => new Date(a.scheduledAt ?? 0).getTime() - new Date(b.scheduledAt ?? 0).getTime());
+  const firstScheduledAt = scheduledCarousels[0]?.scheduledAt ?? null;
+  const activeScheduledCarousels =
+    carouselStatusFilter === "scheduled"
+      ? filteredCarousels.filter((carousel) => !!carousel.scheduledAt && !carousel.postedAt)
+      : [];
+  const scheduledByDay = activeScheduledCarousels.reduce<Record<string, Carousel[]>>((acc, carousel) => {
+    if (!carousel.scheduledAt) return acc;
+    const key = formatCalendarDay(new Date(carousel.scheduledAt));
+    acc[key] ??= [];
+    acc[key].push(carousel);
+    return acc;
+  }, {});
+  const visibleMonthKey = getMonthKey(calendarMonth);
+  const visibleMonthScheduledCount = activeScheduledCarousels.filter((carousel) =>
+    carousel.scheduledAt && getMonthKey(new Date(carousel.scheduledAt)) === visibleMonthKey
+  ).length;
+
+  useEffect(() => {
+    if (carouselStatusFilter !== "scheduled" && carouselViewMode === "calendar") {
+      setCarouselViewMode("cards");
+    }
+  }, [carouselStatusFilter, carouselViewMode]);
+
+  useEffect(() => {
+    if (carouselStatusFilter !== "scheduled" || !firstScheduledAt) return;
+    setCalendarMonth(getMonthStart(new Date(firstScheduledAt)));
+  }, [carouselStatusFilter, firstScheduledAt]);
+
+  const calendarGridStart = new Date(calendarMonth);
+  calendarGridStart.setDate(calendarMonth.getDate() - ((calendarMonth.getDay() + 6) % 7));
+  const calendarDays = Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(calendarGridStart);
+    day.setDate(calendarGridStart.getDate() + index);
+    return day;
+  });
+  const todayKey = formatCalendarDay(new Date());
 
   const handleCreate = useCallback(async (name: string, aspectRatio: string) => {
     const carousel = await createCarousel(name, aspectRatio);
@@ -352,6 +413,19 @@ export default function DashboardPage() {
                     <List className="h-3.5 w-3.5" />
                     Lista
                   </button>
+                  {carouselStatusFilter === "scheduled" ? (
+                    <button
+                      onClick={() => setCarouselViewMode("calendar")}
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        carouselViewMode === "calendar"
+                          ? "bg-surface text-foreground shadow-sm"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      <Calendar className="h-3.5 w-3.5" />
+                      Calendario
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -362,6 +436,119 @@ export default function DashboardPage() {
                   <p className="mx-auto max-w-md text-sm text-muted-foreground">
                     Probá con otro filtro o creá un nuevo carrusel para empezar.
                   </p>
+                </div>
+              ) : carouselViewMode === "calendar" && carouselStatusFilter === "scheduled" ? (
+                <div className="rounded-2xl border border-border bg-surface">
+                  <div className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        Vista mensual
+                      </p>
+                      <h2 className="text-lg font-semibold capitalize">
+                        {formatCalendarMonth(calendarMonth)}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {visibleMonthScheduledCount} programado{visibleMonthScheduledCount === 1 ? "" : "s"} en este mes
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCalendarMonth(
+                            (current) => new Date(current.getFullYear(), current.getMonth() - 1, 1)
+                          )
+                        }
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCalendarMonth(getMonthStart(new Date()))}
+                      >
+                        Hoy
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setCalendarMonth(
+                            (current) => new Date(current.getFullYear(), current.getMonth() + 1, 1)
+                          )
+                        }
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-7 border-b border-border bg-muted/30 text-center text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((label) => (
+                      <div key={label} className="px-2 py-3">
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-7">
+                    {calendarDays.map((day) => {
+                      const dayKey = formatCalendarDay(day);
+                      const items = scheduledByDay[dayKey] ?? [];
+                      const isCurrentMonth = day.getMonth() === calendarMonth.getMonth();
+                      const isToday = dayKey === todayKey;
+
+                      return (
+                        <div
+                          key={dayKey}
+                          className={`min-h-36 border-b border-r border-border p-2 last:border-r-0 sm:[&:nth-child(7n)]:border-r-0 ${
+                            isCurrentMonth ? "bg-surface" : "bg-muted/20"
+                          }`}
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <span
+                              className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium ${
+                                isToday
+                                  ? "bg-accent text-accent-foreground"
+                                  : isCurrentMonth
+                                    ? "text-foreground"
+                                    : "text-muted-foreground"
+                              }`}
+                            >
+                              {day.getDate()}
+                            </span>
+                            {items.length > 0 ? (
+                              <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-700">
+                                {items.length}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className="space-y-2">
+                            {items.map((carousel) => (
+                              <button
+                                key={carousel.id}
+                                onClick={() => router.push(`/carousel/${carousel.id}`)}
+                                className="w-full rounded-lg border border-violet-200 bg-violet-500/5 px-2 py-2 text-left transition-colors hover:bg-violet-500/10"
+                              >
+                                <div className="truncate text-xs font-medium text-foreground">
+                                  {carousel.name}
+                                </div>
+                                <div className="mt-1 flex items-center gap-1 text-[11px] text-violet-700">
+                                  <CalendarClock className="h-3 w-3 shrink-0" />
+                                  <span>{formatScheduledAt(carousel.scheduledAt!)}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : carouselViewMode === "cards" ? (
                 <div className="oc-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
