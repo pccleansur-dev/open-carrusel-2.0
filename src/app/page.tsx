@@ -158,6 +158,12 @@ export default function DashboardPage() {
     router.push(`/carousel/${carousel.id}`);
   }, [createCarousel, router]);
 
+  const handleRowKeyDown = useCallback((event: React.KeyboardEvent, id: string) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    router.push(`/carousel/${id}`);
+  }, [router]);
+
   return (
     <div className="h-full flex flex-col">
       <TopBar
@@ -287,10 +293,13 @@ export default function DashboardPage() {
                   <span>Instagram</span>
                 </div>
                 {postedCarousels.map((carousel) => (
-                  <button
+                  <div
                     key={carousel.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => router.push(`/carousel/${carousel.id}`)}
-                    className="grid w-full grid-cols-[minmax(0,2fr)_110px_120px_150px_minmax(0,1fr)] gap-4 border-b border-border/70 px-5 py-4 text-left transition-colors hover:bg-muted/40 last:border-b-0"
+                    onKeyDown={(event) => handleRowKeyDown(event, carousel.id)}
+                    className="grid w-full cursor-pointer grid-cols-[minmax(0,2fr)_110px_120px_150px_minmax(0,1fr)] gap-4 border-b border-border/70 px-5 py-4 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset last:border-b-0"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -339,7 +348,7 @@ export default function DashboardPage() {
                         <span>-</span>
                       )}
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             )
@@ -649,10 +658,13 @@ export default function DashboardPage() {
                   {filteredCarousels.map((carousel) => {
                     const status = getCarouselStatus(carousel);
                     return (
-                      <button
+                      <div
                         key={carousel.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => router.push(`/carousel/${carousel.id}`)}
-                        className="grid w-full grid-cols-[minmax(0,2.1fr)_110px_120px_180px_120px_minmax(0,1.2fr)] gap-4 border-b border-border/70 px-5 py-4 text-left transition-colors hover:bg-muted/40 last:border-b-0"
+                        onKeyDown={(event) => handleRowKeyDown(event, carousel.id)}
+                        className="grid w-full cursor-pointer grid-cols-[minmax(0,2.1fr)_110px_120px_180px_120px_minmax(0,1.2fr)] gap-4 border-b border-border/70 px-5 py-4 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset last:border-b-0"
                       >
                         <div className="min-w-0">
                           <div className="truncate text-sm font-semibold">{carousel.name}</div>
@@ -737,7 +749,7 @@ export default function DashboardPage() {
                             </button>
                           </div>
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
