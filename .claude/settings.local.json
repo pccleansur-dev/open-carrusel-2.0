@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Make__users_me",
+      "mcp__claude_ai_Make__scenarios_get",
+      "mcp__claude_ai_Make__organizations_list",
+      "mcp__claude_ai_Make__app-module_get",
+      "mcp__claude_ai_Make__scenarios_update",
+      "mcp__claude_ai_Make__app-modules_list",
+      "Bash(npx tsc *)",
+      "Skill(stop)",
+      "Skill(stop:*)",
+      "Skill(start)",
+      "Skill(start:*)",
+      "Bash(PORT=3000 npm run dev > /tmp/open-carrusel-dev.log 2>&1 &)",
+      "Bash(break)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 24564 /F)",
+      "Bash(taskkill /PID 37620 /F)",
+      "PowerShell(Stop-Process -Id 24564 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 37620 -Force -ErrorAction SilentlyContinue)",
+      "Bash(curl -sf http://localhost:3000)",
+      "PowerShell(Stop-Process -Id 14276 -Force -ErrorAction SilentlyContinue)",
+      "Bash(cmd.exe /c start http://localhost:3000)",
+      "Bash(PORT=3002 npm run dev > /tmp/open-carrusel-dev.log 2>&1 &)",
+      "Bash(curl -sf http://localhost:3002)",
+      "Bash(cmd.exe /c start http://localhost:3002)",
+      "Skill(doctor)",
+      "Bash(claude *)",
+      "Bash(echo \"EXIT CODE: $?\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}
