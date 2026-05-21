@@ -1,7 +1,6 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
-
-const FONT_CACHE_DIR = path.resolve(process.cwd(), "data", ".font-cache");
+import { FONT_CACHE_DIR } from "./paths";
 
 // In-memory cache (survives across requests, lost on restart)
 const memoryCache = new Map<string, string>();

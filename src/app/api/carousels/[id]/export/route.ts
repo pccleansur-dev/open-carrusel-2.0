@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import archiver from "archiver";
 import { getCarousel } from "@/lib/carousels";
 import { exportAllSlides } from "@/lib/export-slides";
+import { getIntegrations } from "@/lib/repositories/integrations-repository";
+import { saveExportToPostsDirectory } from "@/lib/posts-directory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +25,8 @@ export async function POST(
   }
 
   try {
+    const integrations = await getIntegrations();
+
     // Export all slides to PNG buffers
     const pngBuffers = await exportAllSlides(
       carousel.slides,
@@ -57,10 +61,27 @@ export async function POST(
       }
     });
 
+    let savedTo: string | null = null;
+    if (integrations.postsDirectory.trim()) {
+      try {
+        savedTo = await saveExportToPostsDirectory({
+          baseDir: integrations.postsDirectory,
+          carousel,
+          pngBuffers,
+          zipBuffer,
+          action: "export",
+          timestamp: new Date().toISOString(),
+        });
+      } catch (saveError) {
+        console.error("Posts directory save error:", saveError);
+      }
+    }
+
     return new Response(new Uint8Array(zipBuffer), {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="carousel-${carousel.name.replace(/[^a-zA-Z0-9-_]/g, "_")}.zip"`,
+        ...(savedTo ? { "X-Posts-Directory": savedTo } : {}),
       },
     });
   } catch (error) {

@@ -24,6 +24,10 @@ export interface Carousel {
   referenceImages: ReferenceImage[];
   caption?: string;
   hashtags?: string[];
+  scheduledAt?: string | null;
+  postedAt?: string | null;
+  publishedPostId?: string | null;
+  publishedPostUrl?: string | null;
   chatSessionId: string | null;
   isTemplate: boolean;
   tags: string[];

@@ -3,6 +3,26 @@ import os from "os";
 import path from "path";
 import { spawnSync } from "child_process";
 
+function normalizeClaudeExecutable(candidate: string): string {
+  if (!candidate) return candidate;
+
+  if (process.platform === "win32" && /\.cmd$/i.test(candidate)) {
+    const exeCandidate = path.join(
+      path.dirname(candidate),
+      "node_modules",
+      "@anthropic-ai",
+      "claude-code",
+      "bin",
+      "claude.exe"
+    );
+    if (fs.existsSync(exeCandidate)) {
+      return exeCandidate;
+    }
+  }
+
+  return candidate;
+}
+
 function buildCandidates(): string[] {
   const home = os.homedir();
   const candidates: string[] = [];
@@ -51,12 +71,13 @@ function probePath(): string | null {
 
 export function findClaudePath(): string | null {
   if (process.env.CLAUDE_CLI_PATH && fs.existsSync(process.env.CLAUDE_CLI_PATH)) {
-    return process.env.CLAUDE_CLI_PATH;
+    return normalizeClaudeExecutable(process.env.CLAUDE_CLI_PATH);
   }
   for (const candidate of buildCandidates()) {
-    if (fs.existsSync(candidate)) return candidate;
+    if (fs.existsSync(candidate)) return normalizeClaudeExecutable(candidate);
   }
-  return probePath();
+  const probed = probePath();
+  return probed ? normalizeClaudeExecutable(probed) : null;
 }
 
 export function getClaudePath(): string {

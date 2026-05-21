@@ -1,0 +1,30 @@
+services:
+  open-carrusel-2-1:
+    container_name: OpenCarrusel-2.1
+    image: open-carrusel:2.1
+    build: .
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
+      - ./posts:/app/posts
+      - ${USERPROFILE}/.claude:/run/claude-host/claude-dir:ro
+      - ${USERPROFILE}/.claude.json:/run/claude-host/claude.json:ro
+      - ${USERPROFILE}/.codex:/run/codex-host/codex-dir:ro
+    environment:
+      - NODE_ENV=production
+      - OC_DATA_DIR=/app/data
+      - POSTS_DIRECTORY=/app/posts
+      - OPEN_CARRUSEL_API_BASE_URL=http://127.0.0.1:3000
+      - CLAUDE_CLI_PATH=/usr/local/bin/claude
+      - CODEX_CLI_PATH=/usr/local/bin/codex
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MAKE_INSTAGRAM_WEBHOOK=${MAKE_INSTAGRAM_WEBHOOK}
+      - IG_USER_ID=${IG_USER_ID}
+      - AI_PROVIDER=${AI_PROVIDER:-auto}
+      - CODEX_MODEL=${CODEX_MODEL:-}
+    shm_size: 256mb
+    security_opt:
+      - seccomp:unconfined
+    restart: unless-stopped

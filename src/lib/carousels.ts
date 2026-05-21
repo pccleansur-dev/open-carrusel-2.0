@@ -28,26 +28,57 @@ export async function createCarousel(
   aspectRatio: AspectRatio
 ): Promise<Carousel> {
   const data = await load();
+  const timestamp = now();
   const carousel: Carousel = {
     id: generateId(),
     name,
     aspectRatio,
     slides: [],
     referenceImages: [],
+    scheduledAt: null,
+    postedAt: null,
+    publishedPostId: null,
+    publishedPostUrl: null,
     chatSessionId: null,
     isTemplate: false,
     tags: [],
-    createdAt: now(),
-    updatedAt: now(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
   };
   data.carousels.push(carousel);
   await save(data);
   return carousel;
 }
 
+export async function listScheduledCarousels(): Promise<Carousel[]> {
+  const data = await load();
+  const currentTime = new Date().toISOString();
+  return data.carousels.filter(
+    (carousel) =>
+      !carousel.isTemplate &&
+      carousel.scheduledAt != null &&
+      !carousel.postedAt &&
+      carousel.scheduledAt <= currentTime
+  );
+}
+
 export async function updateCarousel(
   id: string,
-  updates: Partial<Pick<Carousel, "name" | "aspectRatio" | "tags" | "chatSessionId" | "caption" | "hashtags">>
+  updates: Partial<
+    Pick<
+      Carousel,
+      | "name"
+      | "aspectRatio"
+      | "tags"
+      | "chatSessionId"
+      | "caption"
+      | "hashtags"
+      | "scheduledAt"
+      | "postedAt"
+      | "publishedPostId"
+      | "publishedPostUrl"
+    >
+  >
 ): Promise<Carousel | null> {
   const data = await load();
   const idx = data.carousels.findIndex((c) => c.id === id);
@@ -62,6 +93,7 @@ export async function duplicateCarousel(id: string): Promise<Carousel | null> {
   const source = data.carousels.find((c) => c.id === id);
   if (!source) return null;
 
+  const timestamp = now();
   const duplicate: Carousel = {
     ...source,
     id: generateId(),
@@ -73,9 +105,13 @@ export async function duplicateCarousel(id: string): Promise<Carousel | null> {
     })),
     referenceImages: [...(source.referenceImages || [])],
     chatSessionId: null,
+    scheduledAt: null,
+    postedAt: null,
+    publishedPostId: null,
+    publishedPostUrl: null,
     isTemplate: false,
-    createdAt: now(),
-    updatedAt: now(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
   };
 
   data.carousels.push(duplicate);

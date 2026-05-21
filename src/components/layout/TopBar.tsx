@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Settings, Layers } from "lucide-react";
+import { ArrowLeft, Settings, Layers, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TopBarProps {
@@ -11,6 +11,7 @@ interface TopBarProps {
   editable?: boolean;
   onTitleChange?: (newTitle: string) => void;
   onSettingsClick?: () => void;
+  onIntegrationsClick?: () => void;
 }
 
 export function TopBar({
@@ -19,6 +20,7 @@ export function TopBar({
   editable,
   onTitleChange,
   onSettingsClick,
+  onIntegrationsClick,
 }: TopBarProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -80,6 +82,17 @@ export function TopBar({
         )}
       </div>
       <div className="flex-1" />
+      {onIntegrationsClick && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onIntegrationsClick}
+          aria-label="Integraciones"
+          title="Integraciones"
+        >
+          <Plug className="h-4 w-4" />
+        </Button>
+      )}
       {onSettingsClick && (
         <Button
           variant="ghost"

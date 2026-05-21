@@ -1,0 +1,538 @@
+======SLIDE 1======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #080808; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #F4C000 60%, #2E1FA3); }
+.bg-circle { position: absolute; top: -200px; right: -200px; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(46,31,163,0.4) 0%, transparent 70%); }
+.bg-yellow { position: absolute; bottom: 100px; left: -150px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(244,192,0,0.07) 0%, transparent 70%); }
+.corner-tl { position: absolute; top: 18px; left: 18px; width: 80px; height: 80px; border-left: 3px solid rgba(244,192,0,0.25); border-top: 3px solid rgba(244,192,0,0.25); }
+.corner-br { position: absolute; bottom: 18px; right: 18px; width: 80px; height: 80px; border-right: 3px solid rgba(244,192,0,0.15); border-bottom: 3px solid rgba(244,192,0,0.15); }
+.logo { position: absolute; top: 52px; left: 70px; height: 52px; object-fit: contain; }
+.tag { position: absolute; top: 60px; right: 70px; background: rgba(244,192,0,0.12); border: 1px solid rgba(244,192,0,0.35); padding: 10px 22px; border-radius: 4px; font-size: 15px; font-weight: 700; color: #F4C000; letter-spacing: 2px; text-transform: uppercase; }
+.main { position: absolute; top: 175px; left: 70px; right: 70px; }
+.excl { display: inline-flex; align-items: center; justify-content: center; width: 68px; height: 68px; background: #F4C000; border-radius: 8px; font-family: 'Anton', sans-serif; font-size: 42px; color: #000; margin-bottom: 40px; }
+h1 { font-family: 'Anton', sans-serif; font-size: 108px; line-height: 0.94; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 44px; }
+h1 em { color: #F4C000; font-style: normal; }
+.subtext { font-size: 27px; color: rgba(255,255,255,0.5); line-height: 1.55; max-width: 840px; }
+/* Laptop visual */
+.visual { position: absolute; bottom: 70px; left: 0; right: 0; height: 420px; }
+.surface { position: absolute; bottom: 0; left: 0; right: 0; height: 150px; background: linear-gradient(180deg, #1e1006 0%, #0d0603 100%); }
+.fabric-line { position: absolute; height: 1px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+.fl1 { top: 20px; left: 60px; width: 240px; transform: rotate(-1.5deg); }
+.fl2 { top: 50px; left: 180px; width: 170px; transform: rotate(1deg); }
+.fl3 { top: 28px; right: 70px; width: 210px; transform: rotate(-1deg); }
+.laptop-wrap { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); width: 560px; }
+.lscreen { width: 560px; height: 340px; background: linear-gradient(145deg, #1a1a2e, #0e0e1a); border-radius: 14px 14px 5px 5px; border: 2.5px solid #2a2a3e; box-shadow: 0 -20px 80px rgba(46,31,163,0.25), 0 20px 60px rgba(0,0,0,0.9); position: relative; overflow: hidden; }
+.linner { margin: 14px; height: calc(100% - 28px); background: #06060f; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
+.warn-circle { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #F4C000; background: rgba(244,192,0,0.1); display: flex; align-items: center; justify-content: center; }
+.warn-tri { width: 0; height: 0; border-left: 22px solid transparent; border-right: 22px solid transparent; border-bottom: 40px solid #F4C000; position: relative; top: 5px; }
+.warn-label { font-family: 'Poppins', sans-serif; font-size: 18px; color: rgba(255,255,255,0.5); }
+.lbase { width: 600px; height: 30px; background: linear-gradient(180deg, #1e1e1e, #111); border-radius: 0 0 4px 4px; border: 1.5px solid #2a2a2a; border-top: none; margin: 0 auto; }
+.heat-glow { position: absolute; bottom: 148px; left: 50%; transform: translateX(-50%); width: 400px; height: 60px; background: radial-gradient(ellipse, rgba(255,80,0,0.2) 0%, transparent 70%); }
+/* Swipe */
+.swipe-bar { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; }
+.sw-text { font-size: 15px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; white-space: nowrap; }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+.dot.on { background: #F4C000; width: 28px; border-radius: 4px; }
+</style>
+<div class="slide">
+  <div class="top-bar"></div>
+  <div class="bg-circle"></div>
+  <div class="bg-yellow"></div>
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  <div class="tag">Pc Clean · Tips</div>
+  <div class="main">
+    <div class="excl">!</div>
+    <h1>LO QUE <em>NO</em><br>DEBERÍAS<br>HACER CON<br>TU <em>NOTEBOOK</em></h1>
+    <p class="subtext">¿Cuánto le estás acortando la vida a tu equipo sin saberlo?</p>
+  </div>
+  <div class="visual">
+    <div class="surface">
+      <div class="fabric-line fl1"></div>
+      <div class="fabric-line fl2"></div>
+      <div class="fabric-line fl3"></div>
+    </div>
+    <div class="heat-glow"></div>
+    <div class="laptop-wrap">
+      <div class="lscreen">
+        <div class="linner">
+          <div class="warn-circle"><div class="warn-tri"></div></div>
+          <span class="warn-label">Temperatura crítica</span>
+        </div>
+      </div>
+      <div class="lbase"></div>
+    </div>
+  </div>
+  <div class="swipe-bar">
+    <span class="sw-text">Desliza para ver los errores</span>
+    <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+======SLIDE 2======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #080808; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #F4C000 60%, #2E1FA3); }
+.bg-num { position: absolute; top: 30px; right: -10px; font-family: 'Anton', sans-serif; font-size: 420px; color: rgba(244,192,0,0.04); line-height: 1; }
+.logo { position: absolute; top: 50px; left: 70px; height: 50px; object-fit: contain; }
+.error-badge { position: absolute; top: 55px; right: 70px; display: flex; align-items: center; gap: 14px; }
+.x-box { width: 48px; height: 48px; background: #e53030; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.x-line { font-size: 24px; color: #fff; font-weight: 900; line-height: 1; }
+.error-label { font-size: 17px; font-weight: 700; color: #e53030; text-transform: uppercase; letter-spacing: 2px; }
+/* Main content */
+.main { position: absolute; top: 165px; left: 70px; right: 70px; }
+.num-big { font-family: 'Anton', sans-serif; font-size: 34px; color: #F4C000; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+h2 { font-family: 'Anton', sans-serif; font-size: 82px; color: #fff; text-transform: uppercase; line-height: 0.97; margin-bottom: 36px; }
+h2 em { color: #F4C000; font-style: normal; }
+.divider { width: 70px; height: 4px; background: #F4C000; border-radius: 2px; margin-bottom: 36px; }
+.explain { font-size: 26px; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 50px; max-width: 900px; }
+/* Diagram */
+.diagram { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 44px; margin-bottom: 0; }
+.diagram-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 36px; }
+/* Airflow visual */
+.airflow { display: flex; align-items: center; gap: 0; margin-bottom: 36px; }
+.af-col { flex: 1; }
+.af-label { font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 12px; text-align: center; }
+/* Good side */
+.good-box { background: rgba(46,31,163,0.15); border: 1.5px solid rgba(46,31,163,0.5); border-radius: 10px; padding: 24px; text-align: center; }
+.arrow-up { display: flex; gap: 10px; justify-content: center; }
+.arr { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.arr-shaft { width: 3px; height: 36px; background: #4a6cf7; border-radius: 2px; }
+.arr-head { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid #4a6cf7; }
+.good-text { font-size: 15px; color: rgba(255,255,255,0.5); margin-top: 10px; }
+.vs-col { width: 60px; display: flex; align-items: center; justify-content: center; }
+.vs-text { font-family: 'Anton', sans-serif; font-size: 28px; color: rgba(255,255,255,0.2); }
+/* Bad side */
+.bad-box { background: rgba(229,48,48,0.08); border: 1.5px solid rgba(229,48,48,0.4); border-radius: 10px; padding: 24px; text-align: center; }
+.blocked-arr { display: flex; gap: 10px; justify-content: center; position: relative; }
+.barr-shaft { width: 3px; height: 36px; background: rgba(229,48,48,0.5); border-radius: 2px; }
+.barr-head { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid #e53030; }
+.block-line { position: absolute; bottom: 24px; left: 0; right: 0; height: 3px; background: #e53030; border-radius: 2px; }
+.bad-text { font-size: 15px; color: rgba(229,48,48,0.7); margin-top: 10px; }
+/* Fact */
+.fact { display: flex; gap: 20px; align-items: flex-start; padding: 26px 30px; background: rgba(244,192,0,0.07); border-left: 4px solid #F4C000; border-radius: 0 8px 8px 0; }
+.fact-num { font-family: 'Anton', sans-serif; font-size: 52px; color: #F4C000; line-height: 1; white-space: nowrap; }
+.fact-text { font-size: 20px; color: rgba(255,255,255,0.7); line-height: 1.5; padding-top: 6px; }
+.fact-text strong { color: #F4C000; }
+</style>
+<div class="slide">
+  <div class="top-bar"></div>
+  <div class="bg-num">01</div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  <div class="error-badge">
+    <div class="x-box"><span class="x-line">✕</span></div>
+    <span class="error-label">Error #1</span>
+  </div>
+  <div class="main">
+    <div class="num-big">— Error 01 de 04 —</div>
+    <h2>USARLA<br>SOBRE <em>SUPERFICIES</em><br>BLANDAS</h2>
+    <div class="divider"></div>
+    <p class="explain">La cama, el sillón y la almohada tapan las ventilaciones. Sin flujo de aire, el calor se acumula y daña los componentes internos.</p>
+    <div class="diagram">
+      <div class="diagram-title">Flujo de aire: correcto vs. bloqueado</div>
+      <div class="airflow">
+        <div class="af-col">
+          <div class="af-label">Mesa firme</div>
+          <div class="good-box">
+            <div class="arrow-up">
+              <div class="arr"><div class="arr-head"></div><div class="arr-shaft"></div></div>
+              <div class="arr"><div class="arr-head"></div><div class="arr-shaft"></div></div>
+              <div class="arr"><div class="arr-head"></div><div class="arr-shaft"></div></div>
+            </div>
+            <div class="good-text">Ventilacion libre</div>
+          </div>
+        </div>
+        <div class="vs-col"><span class="vs-text">vs</span></div>
+        <div class="af-col">
+          <div class="af-label">Cama / sillon</div>
+          <div class="bad-box">
+            <div class="blocked-arr">
+              <div class="arr"><div class="arr-head" style="border-bottom-color:rgba(229,48,48,0.4)"></div><div class="barr-shaft"></div></div>
+              <div class="arr"><div class="arr-head" style="border-bottom-color:rgba(229,48,48,0.4)"></div><div class="barr-shaft"></div></div>
+              <div class="arr"><div class="arr-head" style="border-bottom-color:rgba(229,48,48,0.4)"></div><div class="barr-shaft"></div></div>
+              <div class="block-line"></div>
+            </div>
+            <div class="bad-text">Bloqueada</div>
+          </div>
+        </div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">+30°C</div>
+        <div class="fact-text">mas de temperatura en solo <strong>10 minutos</strong> sobre una frazada que en una superficie dura.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+======SLIDE 3======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #080808; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #F4C000 60%, #2E1FA3); }
+.bg-num { position: absolute; top: 30px; right: -10px; font-family: 'Anton', sans-serif; font-size: 420px; color: rgba(244,192,0,0.04); line-height: 1; }
+.logo { position: absolute; top: 50px; left: 70px; height: 50px; object-fit: contain; }
+.error-badge { position: absolute; top: 55px; right: 70px; display: flex; align-items: center; gap: 14px; }
+.x-box { width: 48px; height: 48px; background: #e53030; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.x-line { font-size: 24px; color: #fff; font-weight: 900; line-height: 1; }
+.error-label { font-size: 17px; font-weight: 700; color: #e53030; text-transform: uppercase; letter-spacing: 2px; }
+.main { position: absolute; top: 165px; left: 70px; right: 70px; }
+.num-big { font-family: 'Anton', sans-serif; font-size: 34px; color: #F4C000; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+h2 { font-family: 'Anton', sans-serif; font-size: 82px; color: #fff; text-transform: uppercase; line-height: 0.97; margin-bottom: 36px; }
+h2 em { color: #F4C000; font-style: normal; }
+.divider { width: 70px; height: 4px; background: #F4C000; border-radius: 2px; margin-bottom: 36px; }
+.explain { font-size: 26px; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 46px; max-width: 900px; }
+/* Battery visual */
+.battery-section { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 40px 44px; }
+.bat-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 32px; }
+/* Battery bars */
+.bat-bars { display: flex; gap: 8px; align-items: flex-end; height: 160px; margin-bottom: 14px; }
+.bat-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; }
+.bat-bar { width: 100%; border-radius: 6px 6px 0 0; }
+.bat-pct { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.6); }
+.bat-yr { font-size: 14px; color: rgba(255,255,255,0.3); }
+.year-labels { display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; }
+.year-label { flex: 1; text-align: center; font-size: 13px; color: rgba(255,255,255,0.3); }
+/* Stats row */
+.stats-row { display: flex; gap: 16px; margin-top: 30px; }
+.stat-card { flex: 1; background: rgba(244,192,0,0.06); border: 1px solid rgba(244,192,0,0.2); border-radius: 10px; padding: 22px 18px; text-align: center; }
+.stat-num { font-family: 'Anton', sans-serif; font-size: 44px; color: #F4C000; line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 16px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+.tip-box { margin-top: 30px; padding: 22px 28px; background: rgba(46,31,163,0.12); border-left: 4px solid #2E1FA3; border-radius: 0 8px 8px 0; }
+.tip-box p { font-size: 20px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+.tip-box strong { color: #F4C000; }
+</style>
+<div class="slide">
+  <div class="top-bar"></div>
+  <div class="bg-num">02</div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  <div class="error-badge">
+    <div class="x-box"><span class="x-line">✕</span></div>
+    <span class="error-label">Error #2</span>
+  </div>
+  <div class="main">
+    <div class="num-big">— Error 02 de 04 —</div>
+    <h2>DEJARLA<br><em>SIEMPRE</em><br>CARGANDO</h2>
+    <div class="divider"></div>
+    <p class="explain">Mantener la batería al 100% constante la desgasta. Las baterías Li-Ion se degradan cuando se cargan permanentemente.</p>
+    <div class="battery-section">
+      <div class="bat-title">Salud de la batería con carga constante</div>
+      <div class="bat-bars">
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">100%</div>
+          <div class="bat-bar" style="height:140px;background:linear-gradient(180deg,#4CAF50,#388E3C);"></div>
+        </div>
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">85%</div>
+          <div class="bat-bar" style="height:119px;background:linear-gradient(180deg,#8BC34A,#689F38);"></div>
+        </div>
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">72%</div>
+          <div class="bat-bar" style="height:101px;background:linear-gradient(180deg,#CDDC39,#AFB42B);"></div>
+        </div>
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">61%</div>
+          <div class="bat-bar" style="height:85px;background:linear-gradient(180deg,#FFC107,#F9A825);"></div>
+        </div>
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">48%</div>
+          <div class="bat-bar" style="height:67px;background:linear-gradient(180deg,#FF9800,#E65100);"></div>
+        </div>
+        <div class="bat-bar-wrap">
+          <div class="bat-pct">33%</div>
+          <div class="bat-bar" style="height:46px;background:linear-gradient(180deg,#F44336,#B71C1C);"></div>
+        </div>
+      </div>
+      <div class="year-labels">
+        <div class="year-label">Año 1</div>
+        <div class="year-label">Año 1.5</div>
+        <div class="year-label">Año 2</div>
+        <div class="year-label">Año 2.5</div>
+        <div class="year-label">Año 3</div>
+        <div class="year-label">Año 3.5</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num">500</div>
+          <div class="stat-label">ciclos de carga tiene una bateria tipica</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">20%</div>
+          <div class="stat-label">de capacidad se pierde al año enchufada siempre</div>
+        </div>
+      </div>
+      <div class="tip-box"><p><strong>Mejor practica:</strong> mantener la carga entre 20% y 80% y desconectar cuando llega al tope.</p></div>
+    </div>
+  </div>
+</div>
+
+======SLIDE 4======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #080808; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #F4C000 60%, #2E1FA3); }
+.bg-num { position: absolute; top: 30px; right: -10px; font-family: 'Anton', sans-serif; font-size: 420px; color: rgba(244,192,0,0.04); line-height: 1; }
+.logo { position: absolute; top: 50px; left: 70px; height: 50px; object-fit: contain; }
+.error-badge { position: absolute; top: 55px; right: 70px; display: flex; align-items: center; gap: 14px; }
+.x-box { width: 48px; height: 48px; background: #e53030; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.x-line { font-size: 24px; color: #fff; font-weight: 900; line-height: 1; }
+.error-label { font-size: 17px; font-weight: 700; color: #e53030; text-transform: uppercase; letter-spacing: 2px; }
+.main { position: absolute; top: 165px; left: 70px; right: 70px; }
+.num-big { font-family: 'Anton', sans-serif; font-size: 34px; color: #F4C000; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+h2 { font-family: 'Anton', sans-serif; font-size: 82px; color: #fff; text-transform: uppercase; line-height: 0.97; margin-bottom: 36px; }
+h2 em { color: #F4C000; font-style: normal; }
+.divider { width: 70px; height: 4px; background: #F4C000; border-radius: 2px; margin-bottom: 36px; }
+.explain { font-size: 26px; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 46px; max-width: 900px; }
+/* Risk list */
+.risk-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+.risk-item { display: flex; align-items: center; gap: 20px; padding: 24px 28px; background: rgba(229,48,48,0.06); border: 1px solid rgba(229,48,48,0.2); border-radius: 12px; }
+.risk-icon { width: 52px; height: 52px; min-width: 52px; border-radius: 10px; background: rgba(229,48,48,0.15); display: flex; align-items: center; justify-content: center; }
+.risk-dot { width: 20px; height: 20px; border-radius: 50%; background: #e53030; }
+.risk-text h3 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.risk-text p { font-size: 18px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+/* Correct way */
+.correct { padding: 28px 32px; background: rgba(46,31,163,0.12); border: 1px solid rgba(46,31,163,0.4); border-radius: 12px; }
+.correct-title { font-size: 14px; font-weight: 700; color: rgba(46,31,163,0.9); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+.correct-items { display: flex; flex-direction: column; gap: 10px; }
+.correct-item { display: flex; align-items: center; gap: 14px; }
+.check { width: 22px; height: 22px; border-radius: 50%; background: #2E1FA3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.check-mark { width: 6px; height: 10px; border-right: 2.5px solid #fff; border-bottom: 2.5px solid #fff; transform: rotate(40deg) translate(-1px, -1px); }
+.correct-item span { font-size: 19px; color: rgba(255,255,255,0.65); }
+</style>
+<div class="slide">
+  <div class="top-bar"></div>
+  <div class="bg-num">03</div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  <div class="error-badge">
+    <div class="x-box"><span class="x-line">✕</span></div>
+    <span class="error-label">Error #3</span>
+  </div>
+  <div class="main">
+    <div class="num-big">— Error 03 de 04 —</div>
+    <h2>TRANSPORTARLA<br><em>ENCENDIDA</em><br>EN LA MOCHILA</h2>
+    <div class="divider"></div>
+    <p class="explain">Los golpes y vibraciones mientras el disco gira o el sistema está activo pueden causar daños graves e irreversibles.</p>
+    <div class="risk-list">
+      <div class="risk-item">
+        <div class="risk-icon"><div class="risk-dot"></div></div>
+        <div class="risk-text">
+          <h3>Daño al disco duro (HDD)</h3>
+          <p>Los cabezales pueden chocar con los platos en movimiento</p>
+        </div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-icon"><div class="risk-dot"></div></div>
+        <div class="risk-text">
+          <h3>Sobrecalentamiento en espacio cerrado</h3>
+          <p>Sin ventilacion, la temperatura escala rapidamente</p>
+        </div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-icon"><div class="risk-dot"></div></div>
+        <div class="risk-text">
+          <h3>Perdida de datos no guardados</h3>
+          <p>Un golpe puede provocar apagado brusco y corrupcion</p>
+        </div>
+      </div>
+    </div>
+    <div class="correct">
+      <div class="correct-title">Correcto</div>
+      <div class="correct-items">
+        <div class="correct-item"><div class="check"><div class="check-mark"></div></div><span>Apagar completamente antes de guardarla</span></div>
+        <div class="correct-item"><div class="check"><div class="check-mark"></div></div><span>Usar funda o mochila con relleno protector</span></div>
+        <div class="correct-item"><div class="check"><div class="check-mark"></div></div><span>Si urgencia: modo hibernacion, no suspension</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+======SLIDE 5======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #080808; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+.top-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #F4C000 60%, #2E1FA3); }
+.bg-num { position: absolute; top: 30px; right: -10px; font-family: 'Anton', sans-serif; font-size: 420px; color: rgba(244,192,0,0.04); line-height: 1; }
+/* Heat glow bg */
+.heat-glow-bg { position: absolute; top: 0; left: 0; right: 0; height: 800px; background: radial-gradient(ellipse at 50% -10%, rgba(255,80,0,0.12) 0%, transparent 60%); }
+.logo { position: absolute; top: 50px; left: 70px; height: 50px; object-fit: contain; }
+.error-badge { position: absolute; top: 55px; right: 70px; display: flex; align-items: center; gap: 14px; }
+.x-box { width: 48px; height: 48px; background: #e53030; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.x-line { font-size: 24px; color: #fff; font-weight: 900; line-height: 1; }
+.error-label { font-size: 17px; font-weight: 700; color: #e53030; text-transform: uppercase; letter-spacing: 2px; }
+.main { position: absolute; top: 165px; left: 70px; right: 70px; }
+.num-big { font-family: 'Anton', sans-serif; font-size: 34px; color: #F4C000; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+h2 { font-family: 'Anton', sans-serif; font-size: 82px; color: #fff; text-transform: uppercase; line-height: 0.97; margin-bottom: 36px; }
+h2 em { color: #F4C000; font-style: normal; }
+.divider { width: 70px; height: 4px; background: #F4C000; border-radius: 2px; margin-bottom: 36px; }
+.explain { font-size: 26px; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 40px; max-width: 900px; }
+/* Warning signs */
+.signs-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+.signs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 36px; }
+.sign-card { padding: 26px 24px; border-radius: 12px; border: 1px solid; }
+.sign-card.warn { background: rgba(255,80,0,0.07); border-color: rgba(255,80,0,0.3); }
+.sign-card.crit { background: rgba(229,48,48,0.08); border-color: rgba(229,48,48,0.35); }
+.sign-level { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.sign-level.w { color: rgba(255,140,0,0.8); }
+.sign-level.c { color: #e53030; }
+.sign-name { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.sign-desc { font-size: 16px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+/* Temp gauge */
+.gauge-row { display: flex; gap: 0; align-items: stretch; border-radius: 10px; overflow: hidden; margin-bottom: 30px; }
+.gauge-seg { flex: 1; padding: 18px 0; text-align: center; }
+.gauge-temp { font-family: 'Anton', sans-serif; font-size: 24px; color: #fff; display: block; }
+.gauge-label { font-size: 12px; color: rgba(255,255,255,0.6); display: block; margin-top: 4px; }
+/* Consequence */
+.consequence { padding: 24px 28px; background: rgba(229,48,48,0.08); border: 1.5px solid rgba(229,48,48,0.35); border-radius: 10px; }
+.consequence p { font-size: 21px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+.consequence strong { color: #e53030; }
+</style>
+<div class="slide">
+  <div class="top-bar"></div>
+  <div class="bg-num">04</div>
+  <div class="heat-glow-bg"></div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  <div class="error-badge">
+    <div class="x-box"><span class="x-line">✕</span></div>
+    <span class="error-label">Error #4</span>
+  </div>
+  <div class="main">
+    <div class="num-big">— Error 04 de 04 —</div>
+    <h2>IGNORAR LAS<br>SEÑALES DE<br><em>CALOR</em></h2>
+    <div class="divider"></div>
+    <p class="explain">Los ventiladores a maxima potencia y la base caliente son alertas que tu notebook te manda. No las ignores.</p>
+    <div class="signs-title">Señales de alerta</div>
+    <div class="signs-grid">
+      <div class="sign-card warn">
+        <div class="sign-level w">Alerta</div>
+        <div class="sign-name">Ventilador ruidoso</div>
+        <div class="sign-desc">Funciona al maximo aunque hagas poco</div>
+      </div>
+      <div class="sign-card warn">
+        <div class="sign-level w">Alerta</div>
+        <div class="sign-name">Base muy caliente</div>
+        <div class="sign-desc">Incomodo al toque despues de poco uso</div>
+      </div>
+      <div class="sign-card crit">
+        <div class="sign-level c">Critico</div>
+        <div class="sign-name">Apagados solos</div>
+        <div class="sign-desc">Proteccion termica activada por hardware</div>
+      </div>
+      <div class="sign-card crit">
+        <div class="sign-level c">Critico</div>
+        <div class="sign-name">Lentitud extrema</div>
+        <div class="sign-desc">El CPU baja su velocidad para reducir calor</div>
+      </div>
+    </div>
+    <div class="gauge-row">
+      <div class="gauge-seg" style="background:rgba(46,31,163,0.3)">
+        <span class="gauge-temp">&lt;70°C</span>
+        <span class="gauge-label">Normal</span>
+      </div>
+      <div class="gauge-seg" style="background:rgba(244,192,0,0.25)">
+        <span class="gauge-temp">70-85°C</span>
+        <span class="gauge-label">Alerta</span>
+      </div>
+      <div class="gauge-seg" style="background:rgba(255,80,0,0.3)">
+        <span class="gauge-temp">85-95°C</span>
+        <span class="gauge-label">Peligro</span>
+      </div>
+      <div class="gauge-seg" style="background:rgba(229,48,48,0.4)">
+        <span class="gauge-temp">&gt;95°C</span>
+        <span class="gauge-label">Critico</span>
+      </div>
+    </div>
+    <div class="consequence"><p>Sin atencion a tiempo, el sobrecalentamiento puede <strong>fundir el CPU, GPU o la placa madre</strong> de forma permanente.</p></div>
+  </div>
+</div>
+
+======SLIDE 6======
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide { width: 1080px; height: 1350px; background: #F4C000; position: relative; overflow: hidden; font-family: 'Poppins', sans-serif; }
+/* Dark pattern overlay */
+.pattern { position: absolute; inset: 0; background-image: radial-gradient(circle 1px at 40px 40px, rgba(0,0,0,0.08) 0%, transparent 100%); background-size: 60px 60px; }
+/* Dark section at bottom */
+.dark-section { position: absolute; bottom: 0; left: 0; right: 0; height: 520px; background: #080808; clip-path: polygon(0 14%, 100% 0%, 100% 100%, 0% 100%); }
+.dark-section-inner { position: absolute; bottom: 0; left: 0; right: 0; height: 490px; background: linear-gradient(180deg, #0d0d0d, #080808); clip-path: polygon(0 12%, 100% 0%, 100% 100%, 0% 100%); }
+/* Blue accent block */
+.blue-accent { position: absolute; top: 0; right: 0; width: 12px; height: 100%; background: #2E1FA3; }
+/* Logo area */
+.logo-wrap { position: absolute; top: 70px; left: 80px; }
+.logo { height: 65px; object-fit: contain; }
+/* Main content */
+.main { position: absolute; top: 180px; left: 80px; right: 100px; }
+.eyebrow { font-size: 18px; font-weight: 700; color: rgba(0,0,0,0.55); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 28px; }
+h2 { font-family: 'Anton', sans-serif; font-size: 100px; color: #000; text-transform: uppercase; line-height: 0.93; margin-bottom: 36px; }
+.tagline { font-size: 26px; color: rgba(0,0,0,0.65); line-height: 1.5; max-width: 800px; }
+/* Divider */
+.yellow-line { position: absolute; bottom: 498px; left: 0; right: 0; height: 4px; background: #F4C000; }
+/* Bottom CTA area */
+.cta-area { position: absolute; bottom: 60px; left: 80px; right: 80px; }
+.services { display: flex; gap: 12px; margin-bottom: 44px; }
+.svc { flex: 1; padding: 22px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; text-align: center; }
+.svc-name { font-size: 16px; font-weight: 700; color: #F4C000; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.svc-desc { font-size: 14px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+/* CTA buttons row */
+.cta-row { display: flex; gap: 16px; align-items: center; }
+.cta-btn { flex: 1; padding: 28px 24px; background: #F4C000; border-radius: 10px; text-align: center; }
+.cta-btn-text { font-family: 'Anton', sans-serif; font-size: 30px; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+.cta-btn-sub { font-size: 16px; color: rgba(0,0,0,0.6); margin-top: 4px; }
+.follow-box { flex: 1; padding: 28px 24px; border: 2px solid rgba(244,192,0,0.4); border-radius: 10px; text-align: center; }
+.follow-text { font-family: 'Anton', sans-serif; font-size: 26px; color: #fff; text-transform: uppercase; }
+.follow-sub { font-size: 15px; color: rgba(255,255,255,0.4); margin-top: 6px; line-height: 1.4; }
+/* Brand line */
+.brand-line { position: absolute; bottom: 26px; left: 80px; right: 80px; display: flex; align-items: center; justify-content: space-between; }
+.brand-name { font-family: 'Anton', sans-serif; font-size: 20px; color: rgba(255,255,255,0.2); letter-spacing: 4px; text-transform: uppercase; }
+.brand-dots { display: flex; gap: 6px; }
+.bd { width: 8px; height: 8px; border-radius: 50%; background: rgba(244,192,0,0.3); }
+.bd.on { background: #F4C000; }
+</style>
+<div class="slide">
+  <div class="pattern"></div>
+  <div class="dark-section"></div>
+  <div class="dark-section-inner"></div>
+  <div class="blue-accent"></div>
+  <div class="yellow-line"></div>
+  <div class="logo-wrap">
+    <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" alt="Pc Clean" />
+  </div>
+  <div class="main">
+    <div class="eyebrow">La solucion es simple</div>
+    <h2>CUIDA TU<br>NOTEBOOK<br>HOY.</h2>
+    <p class="tagline">El mantenimiento preventivo alarga la vida de tu equipo y te ahorra reparaciones costosas.</p>
+  </div>
+  <div class="cta-area">
+    <div class="services">
+      <div class="svc">
+        <div class="svc-name">Limpieza</div>
+        <div class="svc-desc">Polvo, pasta termica y ventilacion</div>
+      </div>
+      <div class="svc">
+        <div class="svc-name">Bateria</div>
+        <div class="svc-desc">Diagnostico y reemplazo</div>
+      </div>
+      <div class="svc">
+        <div class="svc-name">Revision</div>
+        <div class="svc-desc">Completa sin cargo inicial</div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <div class="cta-btn">
+        <div class="cta-btn-text">Traenos tu notebook</div>
+        <div class="cta-btn-sub">Diagnostico inicial sin costo</div>
+      </div>
+      <div class="follow-box">
+        <div class="follow-text">Guarda este post</div>
+        <div class="follow-sub">y compártelo con alguien que necesita saberlo</div>
+      </div>
+    </div>
+  </div>
+  <div class="brand-line">
+    <span class="brand-name">Pc Clean</span>
+    <div class="brand-dots"><div class="bd"></div><div class="bd"></div><div class="bd"></div><div class="bd"></div><div class="bd"></div><div class="bd on"></div></div>
+  </div>
+</div>
+

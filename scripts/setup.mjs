@@ -12,6 +12,40 @@ function log(msg) {
   process.stdout.write(msg + "\n");
 }
 
+function readLocalEnvFile() {
+  const envPath = path.join(ROOT, ".env.local");
+  try {
+    const raw = fs.readFileSync(envPath, "utf-8");
+    const entries = {};
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const idx = trimmed.indexOf("=");
+      if (idx === -1) continue;
+      const key = trimmed.slice(0, idx).trim();
+      let value = trimmed.slice(idx + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      entries[key] = value;
+    }
+    return entries;
+  } catch {
+    return {};
+  }
+}
+
+function resolveConfiguredDir(value, fallback) {
+  const trimmed = value?.trim();
+  if (!trimmed) return path.join(ROOT, fallback);
+  return path.isAbsolute(trimmed)
+    ? path.normalize(trimmed)
+    : path.resolve(ROOT, trimmed);
+}
+
 function runSync(cmd, args, opts = {}) {
   const res = crossSpawn.sync(cmd, args, { stdio: "inherit", ...opts });
   if (res.status !== 0) {
@@ -75,7 +109,11 @@ function findClaudePath() {
 }
 
 function seedDataFiles() {
-  const dataDir = path.join(ROOT, "data");
+  const localEnv = readLocalEnvFile();
+  const dataDir = resolveConfiguredDir(
+    process.env.OC_DATA_DIR ?? localEnv.OC_DATA_DIR,
+    "data"
+  );
   const uploadsDir = path.join(ROOT, "public", "uploads");
   const exportsDir = path.join(dataDir, "exports");
   const fontCacheDir = path.join(dataDir, ".font-cache");

@@ -1,8 +1,7 @@
 import { readFile, writeFile, rename, mkdir } from "fs/promises";
 import path from "path";
 import { Mutex } from "async-mutex";
-
-const DATA_DIR = path.resolve(process.cwd(), "data");
+import { DATA_DIR } from "./paths";
 const mutexes = new Map<string, Mutex>();
 
 function getMutex(filename: string): Mutex {

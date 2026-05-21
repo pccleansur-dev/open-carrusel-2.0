@@ -1,0 +1,179 @@
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.slide {
+  width: 1080px;
+  height: 1350px;
+  background: #111014;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  font-family: Poppins, sans-serif;
+}
+.purple-glow {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(46,31,163,0.18) 0%, transparent 65%);
+  top: -200px;
+  left: -200px;
+}
+.yellow-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(244,192,0,0.08) 0%, transparent 65%);
+  bottom: 0;
+  right: -100px;
+}
+.top-label {
+  position: relative;
+  z-index: 3;
+  padding: 80px 80px 0;
+}
+.step-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 0;
+}
+.step-num {
+  font-family: Anton, sans-serif;
+  font-size: 60px;
+  color: #F4C000;
+  line-height: 1;
+}
+.step-divider {
+  width: 2px;
+  height: 48px;
+  background: rgba(244,192,0,0.3);
+}
+.step-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.step-pre {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.step-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+.center-piece {
+  position: relative;
+  z-index: 3;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 80px;
+  text-align: center;
+}
+.big-statement {
+  font-family: Anton, sans-serif;
+  font-size: 100px;
+  color: #FFFFFF;
+  line-height: 0.95;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.big-statement .yellow { color: #F4C000; }
+.big-statement .small {
+  font-size: 64px;
+  display: block;
+}
+.statement-sub {
+  font-size: 26px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.65;
+  font-weight: 300;
+  margin-bottom: 64px;
+  max-width: 780px;
+}
+.metrics-row {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(244,192,0,0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.metric {
+  flex: 1;
+  padding: 36px 20px;
+  text-align: center;
+  border-right: 1px solid rgba(244,192,0,0.1);
+}
+.metric:last-child { border-right: none; }
+.metric-val {
+  font-family: Anton, sans-serif;
+  font-size: 52px;
+  color: #F4C000;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.metric-label {
+  font-size: 16px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 300;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.logo {
+  position: absolute;
+  bottom: 56px;
+  right: 72px;
+  width: 60px;
+  opacity: 0.5;
+  z-index: 4;
+}
+</style>
+<div class="slide">
+  <div class="purple-glow"></div>
+  <div class="yellow-glow"></div>
+  <div class="top-label">
+    <div class="step-badge">
+      <div class="step-num">05</div>
+      <div class="step-divider"></div>
+      <div class="step-label">
+        <span class="step-pre">Paso</span>
+        <span class="step-title">Optimizaci&oacute;n</span>
+      </div>
+    </div>
+  </div>
+  <div class="center-piece">
+    <div class="big-statement">
+      No solo<br>la arreglamos.<br><span class="yellow small">La mejoramos.</span>
+    </div>
+    <div class="statement-sub">Desfragmentaci&oacute;n, actualizaciones, inicio limpio,<br>programas innecesarios eliminados. Tu PC sale<br>m&aacute;s r&aacute;pida de lo que entr&oacute;.</div>
+    <div class="metrics-row">
+      <div class="metric">
+        <div class="metric-val">+40%</div>
+        <div class="metric-label">Velocidad
+de inicio</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">-20&deg;C</div>
+        <div class="metric-label">Temp.
+promedio</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">x3</div>
+        <div class="metric-label">Rendimiento
+general</div>
+      </div>
+    </div>
+  </div>
+  <img class="logo" src="/uploads/64d70ecd-3300-4ef3-b614-7839245e41fb.png" />
+</div>

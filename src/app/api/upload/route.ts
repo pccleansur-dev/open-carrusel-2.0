@@ -3,7 +3,6 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { generateId } from "@/lib/utils";
-
 const UPLOAD_DIR = path.resolve(process.cwd(), "public/uploads");
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 

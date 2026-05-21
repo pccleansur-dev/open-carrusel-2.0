@@ -13,11 +13,13 @@ export function ExportButton({ carouselId, slideCount }: ExportButtonProps) {
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [done, setDone] = useState(false);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
 
   const handleExport = async () => {
     if (exporting || slideCount === 0) return;
     setExporting(true);
     setDone(false);
+    setSavedPath(null);
     setProgress({ current: 0, total: slideCount });
 
     try {
@@ -70,6 +72,7 @@ export function ExportButton({ carouselId, slideCount }: ExportButtonProps) {
         }
       } else {
         // Direct ZIP download
+        const exportedPath = response.headers.get("X-Posts-Directory");
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -77,6 +80,9 @@ export function ExportButton({ carouselId, slideCount }: ExportButtonProps) {
         a.download = `carousel-${carouselId}.zip`;
         a.click();
         URL.revokeObjectURL(url);
+        if (exportedPath) {
+          setSavedPath(exportedPath);
+        }
         setDone(true);
       }
     } catch (error) {
@@ -117,6 +123,11 @@ export function ExportButton({ carouselId, slideCount }: ExportButtonProps) {
           </>
         )}
       </span>
+      {savedPath ? (
+        <span className="ml-2 hidden max-w-56 truncate text-[10px] text-accent-foreground/80 sm:inline">
+          {savedPath}
+        </span>
+      ) : null}
     </Button>
   );
 }

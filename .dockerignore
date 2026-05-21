@@ -1,0 +1,17 @@
+.git
+.next
+node_modules
+.playwright-mcp
+data
+posts
+.start-3002.log
+.start-3002.err.log
+*.tmp
+tsconfig.tsbuildinfo
+slide-current-*.html
+slide*.html
+slide*.json
+carousel-*.json
+carousels-list.json
+caption.json
+slides-dump.txt

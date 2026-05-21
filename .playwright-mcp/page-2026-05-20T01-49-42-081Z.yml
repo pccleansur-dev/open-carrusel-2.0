@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e5]
+        - generic [ref=e9]: Open Carrusel
+      - button "Integraciones" [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+      - button "Settings" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - heading "Open Carrusel" [level=1] [ref=e21]
+            - paragraph [ref=e22]: Create Instagram carousels with AI
+          - button "New Carousel" [ref=e23] [cursor=pointer]:
+            - img [ref=e24]
+            - text: New Carousel
+        - generic [ref=e25]:
+          - button "My Carousels" [ref=e26]
+          - button "Templates" [ref=e27]
+          - button "Posted" [ref=e28]
+  - button "Open Next.js Dev Tools" [ref=e38] [cursor=pointer]:
+    - img [ref=e39]

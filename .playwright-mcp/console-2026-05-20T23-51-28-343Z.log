@@ -1,0 +1,5 @@
+[      23ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/_next/static/chunks/0-l-cyu14-b6i.css:0
+[      24ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/_next/static/chunks/0moo5gylhkgz4.js:0
+[      30ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3002/_next/static/chunks/0.sgcmvyb6new.js:0
+[      37ms] ChunkLoadError: Failed to load chunk /_next/static/chunks/0moo5gylhkgz4.js from module 64893
+    at http://localhost:3002/_next/static/chunks/turbopack-00qsx2dz0hg.s.js:1:6063

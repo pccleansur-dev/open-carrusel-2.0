@@ -3,11 +3,20 @@ import type { Carousel } from "@/types/carousel";
 import type { StylePreset } from "@/types/style-preset";
 import { DIMENSIONS, MAX_SLIDES } from "@/types/carousel";
 
+function getApiBaseUrl(): string {
+  const configured = process.env.OPEN_CARRUSEL_API_BASE_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/+$/, "");
+  }
+  return "http://localhost:3002";
+}
+
 export function buildSystemPrompt(
   brand: BrandConfig,
   carousel?: Carousel | null,
   stylePreset?: StylePreset | null
 ): string {
+  const apiBaseUrl = getApiBaseUrl();
   const brandSection = brand.name
     ? `## Brand identity
 - Name: ${brand.name}
@@ -80,25 +89,25 @@ ${presetSection}
 ## API — Use curl for all operations
 
 ### Create a slide:
-curl -s -X POST http://localhost:3000/api/carousels/${carousel?.id || "{ID}"}/slides \\
+curl -s -X POST ${apiBaseUrl}/api/carousels/${carousel?.id || "{ID}"}/slides \\
   -H "Content-Type: application/json" \\
   -d '{"html": "YOUR_HTML_HERE", "notes": "description"}'
 
 ### Update a slide:
-curl -s -X PUT http://localhost:3000/api/carousels/${carousel?.id || "{ID}"}/slides/{SLIDE_ID} \\
+curl -s -X PUT ${apiBaseUrl}/api/carousels/${carousel?.id || "{ID}"}/slides/{SLIDE_ID} \\
   -H "Content-Type: application/json" \\
   -d '{"html": "UPDATED_HTML"}'
 
 ### Delete a slide:
-curl -s -X DELETE http://localhost:3000/api/carousels/${carousel?.id || "{ID}"}/slides/{SLIDE_ID}
+curl -s -X DELETE ${apiBaseUrl}/api/carousels/${carousel?.id || "{ID}"}/slides/{SLIDE_ID}
 
 ### Save caption + hashtags:
-curl -s -X PUT http://localhost:3000/api/carousels/${carousel?.id || "{ID}"}/caption \\
+curl -s -X PUT ${apiBaseUrl}/api/carousels/${carousel?.id || "{ID}"}/caption \\
   -H "Content-Type: application/json" \\
   -d '{"caption": "Your caption text...", "hashtags": ["tag1", "tag2", "tag3"]}'
 
 ### Save as style preset:
-curl -s -X POST http://localhost:3000/api/style-presets \\
+curl -s -X POST ${apiBaseUrl}/api/style-presets \\
   -H "Content-Type: application/json" \\
   -d '{"name": "Style Name", "designRules": "description of visual rules...", "aspectRatio": "${carousel?.aspectRatio || "4:5"}"}'
 

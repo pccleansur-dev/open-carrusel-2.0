@@ -294,13 +294,14 @@ Created automatically by `scripts/setup.mjs` if it can find your Claude CLI. You
 
 ```bash
 CLAUDE_CLI_PATH=/path/to/claude   # set if `which claude` doesn't find it
+OC_DATA_DIR=./data                # optional: where carousels, templates, exports, and integrations are stored
 ```
 
 On Windows, run `where claude` in PowerShell to find the path (typically `C:\Users\<you>\AppData\Roaming\npm\claude.cmd`), then set `CLAUDE_CLI_PATH` in `.env.local`.
 
 ### Brand config
 
-Set on first run (or via the gear icon in the top bar). Stored at `/data/brand.json`. Fields:
+Set on first run (or via the gear icon in the top bar). Stored at `OC_DATA_DIR/brand.json` (defaults to `/data/brand.json`). Fields:
 
 - **Name** — your handle / company / project
 - **Colors** — primary, secondary, accent, background, surface
@@ -310,7 +311,7 @@ Set on first run (or via the gear icon in the top bar). Stored at `/data/brand.j
 
 ### Templates
 
-Save any carousel as a template via the bookmark icon in the editor toolbar. Templates appear in the dashboard's Templates tab. Stored at `/data/templates.json`.
+Save any carousel as a template via the bookmark icon in the editor toolbar. Templates appear in the dashboard's Templates tab. Stored at `OC_DATA_DIR/templates.json` (defaults to `/data/templates.json`).
 
 ### Reference images
 

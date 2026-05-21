@@ -33,7 +33,7 @@ async function getBrowser(): Promise<Browser> {
  * Replaces /uploads/xxx.png paths with data: URIs.
  */
 async function inlineImages(html: string): Promise<string> {
-  const uploadDir = path.resolve(process.cwd(), "public");
+  const publicDir = path.resolve(process.cwd(), "public");
   const imgRegex = /(?:src=["']|url\(["']?)(\/uploads\/[^"'\s)]+)/g;
   const matches = [...html.matchAll(imgRegex)];
 
@@ -41,7 +41,7 @@ async function inlineImages(html: string): Promise<string> {
   for (const match of matches) {
     const imgPath = match[1];
     try {
-      const fullPath = path.join(uploadDir, imgPath);
+      const fullPath = path.join(publicDir, imgPath);
       const buffer = await readFile(fullPath);
       const ext = path.extname(imgPath).toLowerCase();
       const mime =

@@ -3,7 +3,14 @@
 import { useEffect, useState, useCallback, useRef, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2, Grid3X3, Bookmark, Maximize2 } from "lucide-react";
+import {
+  Trash2,
+  Grid3X3,
+  Bookmark,
+  Maximize2,
+  CheckCircle2,
+  ExternalLink,
+} from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -15,6 +22,8 @@ import { ExportButton } from "@/components/editor/ExportButton";
 import { CaptionPanel } from "@/components/editor/CaptionPanel";
 import { SafeZoneOverlay } from "@/components/editor/SafeZoneOverlay";
 import { FullscreenPreview } from "@/components/editor/FullscreenPreview";
+import { PublishButton } from "@/components/editor/PublishButton";
+import { ScheduleButton } from "@/components/editor/ScheduleButton";
 import type { Carousel, AspectRatio } from "@/types/carousel";
 
 interface PageProps {
@@ -314,6 +323,51 @@ export default function CarouselEditorPage({ params }: PageProps) {
               carouselId={carousel.id}
               slideCount={carousel.slides.length}
             />
+            {carousel.postedAt ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700"
+                  title={`Publicado el ${new Date(carousel.postedAt).toLocaleString()}`}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Publicado</span>
+                </div>
+                {carousel.publishedPostUrl ? (
+                  <a
+                    href={carousel.publishedPostUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"
+                    title="Abrir post publicado"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Ver post</span>
+                  </a>
+                ) : carousel.publishedPostId ? (
+                  <span
+                    className="max-w-40 truncate text-[11px] font-mono text-muted-foreground"
+                    title={carousel.publishedPostId}
+                  >
+                    {carousel.publishedPostId}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+            <ScheduleButton
+              carouselId={carousel.id}
+              slideCount={carousel.slides.length}
+              hasCaption={!!carousel.caption}
+              scheduledAt={carousel.scheduledAt}
+              onScheduled={fetchCarousel}
+            />
+            <PublishButton
+              carouselId={carousel.id}
+              slideCount={carousel.slides.length}
+              hasCaption={!!carousel.caption}
+              hasBeenPublished={!!carousel.postedAt}
+              isScheduled={!!carousel.scheduledAt}
+              onPublished={fetchCarousel}
+            />
           </div>
 
           {/* Carousel preview */}
@@ -327,8 +381,10 @@ export default function CarouselEditorPage({ params }: PageProps) {
 
           {/* Caption panel */}
           <CaptionPanel
+            carouselId={carousel.id}
             caption={carousel.caption}
             hashtags={carousel.hashtags}
+            onUpdated={fetchCarousel}
           />
         </div>
       </div>
