@@ -4,6 +4,41 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function normalizePathSegments(pathValue: string): string[] {
+  return pathValue
+    .replace(/\[(\d+)\]/g, ".$1")
+    .split(".")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+}
+
+function findStringByPath(value: unknown, pathValue: string): string | null {
+  const segments = normalizePathSegments(pathValue);
+  if (segments.length === 0) {
+    return null;
+  }
+
+  let current: unknown = value;
+  for (const segment of segments) {
+    if (Array.isArray(current)) {
+      const index = Number(segment);
+      if (!Number.isInteger(index)) {
+        return null;
+      }
+      current = current[index];
+      continue;
+    }
+
+    if (!isRecord(current)) {
+      return null;
+    }
+
+    current = current[segment];
+  }
+
+  return typeof current === "string" && current.trim() ? current.trim() : null;
+}
+
 function findFirstStringByKeys(value: unknown, keys: string[]): string | null {
   if (typeof value === "string") {
     return null;
@@ -69,26 +104,40 @@ export async function uploadPublishedImage(buffer: Buffer, filename: string) {
 }
 
 export async function parsePublishResponse(
-  response: Response
+  response: Response,
+  options?: {
+    postIdPath?: string;
+    postUrlPath?: string;
+  }
 ): Promise<{ publishedPostId: string | null; publishedPostUrl: string | null }> {
   const contentType = response.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
     const payload = (await response.json().catch(() => null)) as unknown;
+    const explicitPostId = options?.postIdPath
+      ? findStringByPath(payload, options.postIdPath)
+      : null;
+    const explicitPostUrl = options?.postUrlPath
+      ? findStringByPath(payload, options.postUrlPath)
+      : null;
     return {
-      publishedPostId: findFirstStringByKeys(payload, [
-        "id",
-        "post_id",
-        "media_id",
-        "creation_id",
-        "instagram_post_id",
-      ]),
-      publishedPostUrl: findFirstStringByKeys(payload, [
-        "permalink",
-        "post_url",
-        "instagram_post_url",
-        "url",
-      ]),
+      publishedPostId:
+        explicitPostId ??
+        findFirstStringByKeys(payload, [
+          "id",
+          "post_id",
+          "media_id",
+          "creation_id",
+          "instagram_post_id",
+        ]),
+      publishedPostUrl:
+        explicitPostUrl ??
+        findFirstStringByKeys(payload, [
+          "permalink",
+          "post_url",
+          "instagram_post_url",
+          "url",
+        ]),
     };
   }
 

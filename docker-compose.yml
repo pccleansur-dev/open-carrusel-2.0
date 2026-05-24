@@ -8,7 +8,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
-      - ./posts:/app/posts
+      - ${POSTS_DIRECTORY_HOST:-./posts}:/app/posts
       - ${USERPROFILE}/.claude:/run/claude-host/claude-dir:ro
       - ${USERPROFILE}/.claude.json:/run/claude-host/claude.json:ro
       - ${USERPROFILE}/.codex:/run/codex-host/codex-dir:ro
@@ -22,6 +22,9 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - MAKE_INSTAGRAM_WEBHOOK=${MAKE_INSTAGRAM_WEBHOOK}
       - IG_USER_ID=${IG_USER_ID}
+      - MAKE_RESPONSE_POST_ID_PATH=${MAKE_RESPONSE_POST_ID_PATH}
+      - MAKE_RESPONSE_POST_URL_PATH=${MAKE_RESPONSE_POST_URL_PATH}
+      - POSTS_DIRECTORY_HOST=${POSTS_DIRECTORY_HOST:-./posts}
       - AI_PROVIDER=${AI_PROVIDER:-auto}
       - CODEX_MODEL=${CODEX_MODEL:-}
     shm_size: 256mb

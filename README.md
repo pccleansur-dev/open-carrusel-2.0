@@ -299,6 +299,26 @@ OC_DATA_DIR=./data                # optional: where carousels, templates, export
 
 On Windows, run `where claude` in PowerShell to find the path (typically `C:\Users\<you>\AppData\Roaming\npm\claude.cmd`), then set `CLAUDE_CLI_PATH` in `.env.local`.
 
+### Make integration (outgoing + incoming)
+
+For Instagram publishing you typically need:
+
+```bash
+MAKE_INSTAGRAM_WEBHOOK=https://hook.make.com/...
+IG_USER_ID=1784...
+```
+
+Optional but recommended for long-term stability:
+
+```bash
+MAKE_RESPONSE_POST_ID_PATH=postId
+MAKE_RESPONSE_POST_URL_PATH=postUrl
+```
+
+These two response-path variables tell the app where to read the published post data from the **incoming response** sent back by Make. They accept dot notation such as `data.post.id` or array notation such as `result[0].url`.
+
+If your Make scenario returns plain text containing an Instagram URL, Open Carrusel still works thanks to a fallback parser. But if you ever change scenarios or response formats, defining these paths explicitly makes the integration much more portable and reliable.
+
 ### Brand config
 
 Set on first run (or via the gear icon in the top bar). Stored at `OC_DATA_DIR/brand.json` (defaults to `/data/brand.json`). Fields:

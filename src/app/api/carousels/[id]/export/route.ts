@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import archiver from "archiver";
 import { getCarousel } from "@/lib/carousels";
 import { exportAllSlides } from "@/lib/export-slides";
-import { getIntegrations } from "@/lib/repositories/integrations-repository";
+import {
+  getEffectivePostsDirectory,
+  getIntegrations,
+} from "@/lib/repositories/integrations-repository";
 import { saveExportToPostsDirectory } from "@/lib/posts-directory";
 
 export const runtime = "nodejs";
@@ -26,6 +29,7 @@ export async function POST(
 
   try {
     const integrations = await getIntegrations();
+    const effectivePostsDirectory = getEffectivePostsDirectory(integrations);
 
     // Export all slides to PNG buffers
     const pngBuffers = await exportAllSlides(
@@ -62,10 +66,10 @@ export async function POST(
     });
 
     let savedTo: string | null = null;
-    if (integrations.postsDirectory.trim()) {
+    if (effectivePostsDirectory) {
       try {
         savedTo = await saveExportToPostsDirectory({
-          baseDir: integrations.postsDirectory,
+          baseDir: effectivePostsDirectory,
           carousel,
           pngBuffers,
           zipBuffer,

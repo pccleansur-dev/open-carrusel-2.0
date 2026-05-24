@@ -2,7 +2,10 @@ import { buildCaptionFromCarousel } from "@/lib/carousel-caption";
 import { getCarousel, listScheduledCarousels, updateCarousel } from "@/lib/carousels";
 import { exportAllSlides } from "@/lib/export-slides";
 import { saveExportToPostsDirectory } from "@/lib/posts-directory";
-import { getIntegrations } from "@/lib/repositories/integrations-repository";
+import {
+  getEffectivePostsDirectory,
+  getIntegrations,
+} from "@/lib/repositories/integrations-repository";
 import {
   convertPngExportsToJpegs,
   parsePublishResponse,
@@ -65,6 +68,7 @@ async function saveCarouselAssetsToPostsDirectory(params: {
 
 export async function publishCarouselById(id: string) {
   const integrations = await getIntegrations();
+  const effectivePostsDirectory = getEffectivePostsDirectory(integrations);
 
   if (!integrations.makeWebhookUrl) {
     throw new PublishValidationError("Webhook de Make no configurado. Configuralo en Integraciones.");
@@ -120,7 +124,10 @@ export async function publishCarouselById(id: string) {
     throw new Error(errorText || "Make webhook error");
   }
 
-  const publishResult = await parsePublishResponse(response);
+  const publishResult = await parsePublishResponse(response, {
+    postIdPath: integrations.makeResponsePostIdPath,
+    postUrlPath: integrations.makeResponsePostUrlPath,
+  });
   const postedAt = new Date().toISOString();
   await updateCarousel(id, {
     scheduledAt: null,
@@ -131,10 +138,10 @@ export async function publishCarouselById(id: string) {
 
   const publishedCarousel = await getCarousel(id);
   let savedTo: string | null = null;
-  if (publishedCarousel && integrations.postsDirectory.trim()) {
+  if (publishedCarousel && effectivePostsDirectory) {
     try {
       savedTo = await saveCarouselAssetsToPostsDirectory({
-        baseDir: integrations.postsDirectory,
+        baseDir: effectivePostsDirectory,
         carousel: publishedCarousel,
         pngBuffers,
         action: "published",
@@ -179,7 +186,8 @@ export async function saveScheduledCarouselSnapshot(params: {
   scheduledAt: string;
 }) {
   const integrations = await getIntegrations();
-  if (!integrations.postsDirectory.trim()) {
+  const effectivePostsDirectory = getEffectivePostsDirectory(integrations);
+  if (!effectivePostsDirectory) {
     return null;
   }
 
@@ -190,7 +198,7 @@ export async function saveScheduledCarouselSnapshot(params: {
 
   const pngBuffers = await exportAllSlides(carousel.slides, carousel.aspectRatio);
   return saveCarouselAssetsToPostsDirectory({
-    baseDir: integrations.postsDirectory,
+    baseDir: effectivePostsDirectory,
     carousel,
     pngBuffers,
     action: "scheduled",

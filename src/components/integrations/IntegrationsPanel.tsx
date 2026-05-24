@@ -9,6 +9,10 @@ interface IntegrationsConfig {
   makeWebhookUrl: string;
   igUserId: string;
   postsDirectory: string;
+  makeResponsePostIdPath: string;
+  makeResponsePostUrlPath: string;
+  effectivePostsDirectory?: string;
+  dockerPostsDirectoryHost?: string;
 }
 
 interface IntegrationsPanelProps {
@@ -20,6 +24,8 @@ const EMPTY_CONFIG: IntegrationsConfig = {
   makeWebhookUrl: "",
   igUserId: "",
   postsDirectory: "",
+  makeResponsePostIdPath: "",
+  makeResponsePostUrlPath: "",
 };
 
 export function IntegrationsPanel({ open, onClose }: IntegrationsPanelProps) {
@@ -130,8 +136,61 @@ export function IntegrationsPanel({ open, onClose }: IntegrationsPanelProps) {
               className="font-mono text-xs"
             />
             <p className="mt-1 text-[10px] text-muted-foreground">
-              Ruta opcional para guardar o localizar posteos. Si queda vacia, usa
-              {" "} `POSTS_DIRECTORY` del entorno o la ruta por defecto.
+              Ruta guardada en la app. Si Docker define `POSTS_DIRECTORY`, esa sera la
+              ruta interna efectiva de guardado.
+            </p>
+            {config.effectivePostsDirectory ? (
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Ruta efectiva: <span className="font-mono">{config.effectivePostsDirectory}</span>
+              </p>
+            ) : null}
+            {config.dockerPostsDirectoryHost ? (
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Carpeta mapeada en Docker:{" "}
+                <span className="font-mono">{config.dockerPostsDirectoryHost}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Webhook className="h-3.5 w-3.5" />
+              Campo response Post ID
+            </label>
+            <Input
+              value={config.makeResponsePostIdPath}
+              onChange={(event) =>
+                setConfig((current) => ({
+                  ...current,
+                  makeResponsePostIdPath: event.target.value,
+                }))
+              }
+              placeholder="data.post.id o result[0].media_id"
+              className="font-mono text-xs"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Ruta JSON opcional para leer explicitamente el ID del post devuelto por Make.
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Webhook className="h-3.5 w-3.5" />
+              Campo response Post URL
+            </label>
+            <Input
+              value={config.makeResponsePostUrlPath}
+              onChange={(event) =>
+                setConfig((current) => ({
+                  ...current,
+                  makeResponsePostUrlPath: event.target.value,
+                }))
+              }
+              placeholder="data.post.permalink o result[0].url"
+              className="font-mono text-xs"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Ruta JSON opcional para leer explicitamente la URL/permalink del post.
             </p>
           </div>
         </div>

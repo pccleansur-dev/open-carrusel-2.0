@@ -4,6 +4,8 @@ export interface IntegrationsConfig {
   makeWebhookUrl: string;
   igUserId: string;
   postsDirectory: string;
+  makeResponsePostIdPath: string;
+  makeResponsePostUrlPath: string;
   updatedAt: string;
 }
 
@@ -13,6 +15,8 @@ const DEFAULTS: IntegrationsConfig = {
   makeWebhookUrl: "",
   igUserId: "",
   postsDirectory: "",
+  makeResponsePostIdPath: "",
+  makeResponsePostUrlPath: "",
   updatedAt: "",
 };
 
@@ -23,8 +27,16 @@ export async function getIntegrations(): Promise<IntegrationsConfig> {
     ...saved,
     makeWebhookUrl: process.env.MAKE_INSTAGRAM_WEBHOOK || saved.makeWebhookUrl || "",
     igUserId: process.env.IG_USER_ID || saved.igUserId || "",
-    postsDirectory: process.env.POSTS_DIRECTORY || saved.postsDirectory || "",
+    postsDirectory: saved.postsDirectory || "",
+    makeResponsePostIdPath:
+      process.env.MAKE_RESPONSE_POST_ID_PATH || saved.makeResponsePostIdPath || "",
+    makeResponsePostUrlPath:
+      process.env.MAKE_RESPONSE_POST_URL_PATH || saved.makeResponsePostUrlPath || "",
   };
+}
+
+export function getEffectivePostsDirectory(config: Pick<IntegrationsConfig, "postsDirectory">) {
+  return process.env.POSTS_DIRECTORY?.trim() || config.postsDirectory.trim() || "";
 }
 
 export async function updateIntegrations(

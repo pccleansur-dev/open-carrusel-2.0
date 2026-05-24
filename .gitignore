@@ -27,6 +27,7 @@
 # app data (user-generated)
 /data/
 /public/uploads/
+/posts/
 
 # debug
 npm-debug.log*
@@ -45,8 +46,17 @@ yarn-error.log*
 next-env.d.ts
 
 # audit / tooling artifacts
+.playwright-mcp/
 .playwright-cli/
 open-carrusel*.log
+.start-3002*.log
+slide-current-*.html
+slide*.html
+slide*.json
+carousel-*.json
+carousels-list.json
+caption.json
+slides-dump.txt
 /.next/cache/
 
 # OS
