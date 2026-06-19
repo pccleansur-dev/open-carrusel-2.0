@@ -9,8 +9,10 @@ import { DIMENSIONS } from "@/types/carousel";
 
 // Singleton browser with lifecycle management
 let browser: Browser | null = null;
+let browserLaunchPromise: Promise<Browser> | null = null;
 let exportCount = 0;
 const MAX_EXPORTS_BEFORE_RESTART = 50;
+const SCREENSHOT_TIMEOUT_MS = 45_000;
 
 async function getBrowser(): Promise<Browser> {
   if (browser && exportCount >= MAX_EXPORTS_BEFORE_RESTART) {
@@ -19,11 +21,21 @@ async function getBrowser(): Promise<Browser> {
     exportCount = 0;
   }
   if (!browser || !browser.isConnected()) {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
-    });
-    exportCount = 0;
+    browserLaunchPromise ??= puppeteer
+      .launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
+      })
+      .then((launchedBrowser) => {
+        browser = launchedBrowser;
+        exportCount = 0;
+        return launchedBrowser;
+      })
+      .finally(() => {
+        browserLaunchPromise = null;
+      });
+
+    return browserLaunchPromise;
   }
   return browser;
 }
@@ -85,6 +97,7 @@ export async function exportSlide(
   const page = await br.newPage();
 
   try {
+    page.setDefaultTimeout(20_000);
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
     await page.setContent(fullHtml, { waitUntil: "domcontentloaded", timeout: 15000 });
 
@@ -101,9 +114,20 @@ export async function exportSlide(
         // Font loading timeout — proceed with whatever loaded
       });
 
-    const screenshotBuffer = await page.screenshot({
-      type: "png",
-      clip: { x: 0, y: 0, width, height },
+    const screenshotBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        void page.close().catch(() => {});
+        reject(new Error(`Slide screenshot timed out after ${SCREENSHOT_TIMEOUT_MS / 1000}s`));
+      }, SCREENSHOT_TIMEOUT_MS);
+
+      page
+        .screenshot({
+          type: "png",
+          clip: { x: 0, y: 0, width, height },
+        })
+        .then((buffer) => resolve(Buffer.from(buffer)))
+        .catch(reject)
+        .finally(() => clearTimeout(timeout));
     });
 
     exportCount++;
@@ -122,7 +146,8 @@ export async function exportSlide(
 
 /**
  * Export all slides of a carousel to PNG buffers.
- * Processes up to 3 slides concurrently.
+ * Process slides sequentially. Large Instagram canvases can make Chromium
+ * screenshot calls time out when several pages capture in parallel.
  */
 export async function exportAllSlides(
   slides: Slide[],
@@ -130,19 +155,12 @@ export async function exportAllSlides(
   onProgress?: (current: number, total: number) => void
 ): Promise<{ name: string; buffer: Buffer }[]> {
   const results: { name: string; buffer: Buffer }[] = [];
-  const CONCURRENCY = 3;
 
-  for (let i = 0; i < slides.length; i += CONCURRENCY) {
-    const batch = slides.slice(i, i + CONCURRENCY);
-    const batchResults = await Promise.all(
-      batch.map(async (slide, batchIdx) => {
-        const idx = i + batchIdx;
-        const buffer = await exportSlide(slide, aspectRatio);
-        onProgress?.(idx + 1, slides.length);
-        return { name: `slide-${idx + 1}.png`, buffer };
-      })
-    );
-    results.push(...batchResults);
+  for (let i = 0; i < slides.length; i++) {
+    console.log(`[export] Rendering slide ${i + 1}/${slides.length}...`);
+    const buffer = await exportSlide(slides[i], aspectRatio);
+    onProgress?.(i + 1, slides.length);
+    results.push({ name: `slide-${i + 1}.png`, buffer });
   }
 
   return results;

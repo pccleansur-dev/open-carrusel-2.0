@@ -12,16 +12,21 @@ import { ApiError } from "@/lib/api/client";
 import type { BrandConfig } from "@/types/brand";
 import type { Carousel } from "@/types/carousel";
 
+// Module-level cache so navigating back to dashboard is instant
+let _carousels: Carousel[] | null = null;
+let _brand: BrandConfig | null = null;
+
 export function useDashboardData() {
-  const [carousels, setCarousels] = useState<Carousel[]>([]);
-  const [brand, setBrand] = useState<BrandConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [carousels, setCarousels] = useState<Carousel[]>(_carousels ?? []);
+  const [brand, setBrand] = useState<BrandConfig | null>(_brand);
+  const [loading, setLoading] = useState(_carousels === null);
   const [needsBrandSetup, setNeedsBrandSetup] = useState(false);
 
   const refreshCarousels = useCallback(async () => {
     const carouselData = await listCarousels();
-    setCarousels(carouselData.carousels ?? []);
-    return carouselData.carousels ?? [];
+    _carousels = carouselData.carousels ?? [];
+    setCarousels(_carousels);
+    return _carousels;
   }, []);
 
   useEffect(() => {
@@ -35,8 +40,10 @@ export function useDashboardData() {
         ]);
 
         if (cancelled) return;
-        setCarousels(carouselData.carousels ?? []);
-        setBrand(brandData);
+        _carousels = carouselData.carousels ?? [];
+        _brand = brandData;
+        setCarousels(_carousels);
+        setBrand(_brand);
         setNeedsBrandSetup(!brandData.name.trim());
       } finally {
         if (!cancelled) setLoading(false);

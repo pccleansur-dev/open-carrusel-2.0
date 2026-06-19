@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { buildCaptionFromCarousel } from "@/lib/carousel-caption";
 import { getCarousel, updateCarousel } from "@/lib/carousels";
-import { saveScheduledCarouselSnapshot } from "@/lib/publishing";
+import {
+  PublishValidationError,
+  saveScheduledCarouselSnapshot,
+  scheduleCarouselById,
+} from "@/lib/publishing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,12 +45,12 @@ export async function POST(
       }
     }
 
-    const updated = await updateCarousel(id, { scheduledAt });
+    const updated = await scheduleCarouselById({ id, scheduledAt });
     if (!updated) {
       return NextResponse.json({ error: "Carousel not found" }, { status: 404 });
     }
 
-    if (scheduledAt) {
+    if (scheduledAt && updated.scheduledProvider !== "postwiz") {
       void saveScheduledCarouselSnapshot({
           id,
           scheduledAt,
@@ -56,7 +60,12 @@ export async function POST(
     }
 
     return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid request";
+    console.error("Schedule error:", error);
+    return NextResponse.json(
+      { error: message },
+      { status: error instanceof PublishValidationError ? 400 : 500 }
+    );
   }
 }

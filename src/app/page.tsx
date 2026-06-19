@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { fmtDate, fmtDateTime } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -17,6 +18,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
@@ -27,12 +30,18 @@ import { BrandSetup } from "@/components/brand/BrandSetup";
 import { IntegrationsPanel } from "@/components/integrations/IntegrationsPanel";
 import { SlideRenderer } from "@/components/editor/SlideRenderer";
 import { TemplateGallery } from "@/components/templates/TemplateGallery";
+import { PlanningTab } from "@/components/planning/PlanningTab";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import type { Carousel } from "@/types/carousel";
 
-type DashboardTab = "carousels" | "templates" | "posted";
+type DashboardTab = "carousels" | "templates" | "posted" | "planning";
 type CarouselStatusFilter = "all" | "draft" | "scheduled" | "posted";
 type CarouselViewMode = "cards" | "list" | "calendar";
+
+// Persist navigation state across page transitions
+let _lastTab: DashboardTab = "carousels";
+let _lastFilter: CarouselStatusFilter = "all";
+let _lastViewMode: CarouselViewMode = "cards";
 
 function getCarouselStatus(carousel: Carousel): CarouselStatusFilter {
   if (carousel.postedAt) return "posted";
@@ -41,12 +50,7 @@ function getCarouselStatus(carousel: Carousel): CarouselStatusFilter {
 }
 
 function formatScheduledAt(value: string) {
-  return new Date(value).toLocaleString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return fmtDateTime(value);
 }
 
 function getMonthStart(value: Date) {
@@ -82,6 +86,16 @@ export default function DashboardPage() {
   } = useDashboardData();
   const [showBrandSetup, setShowBrandSetup] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
+  const [claudeAuthenticated, setClaudeAuthenticated] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    fetch("/api/chat/check", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { available?: boolean; authenticated?: boolean }) => {
+        setClaudeAuthenticated(data.available !== false && data.authenticated !== false);
+      })
+      .catch(() => setClaudeAuthenticated(false));
+  }, []);
 
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
@@ -103,16 +117,62 @@ export default function DashboardPage() {
   }, [removeCarousel]);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<DashboardTab>("carousels");
-  const [carouselStatusFilter, setCarouselStatusFilter] = useState<CarouselStatusFilter>("all");
-  const [carouselViewMode, setCarouselViewMode] = useState<CarouselViewMode>("cards");
+  const [activeTab, setActiveTab] = useState<DashboardTab>(_lastTab);
+  const [carouselStatusFilter, setCarouselStatusFilter] = useState<CarouselStatusFilter>(_lastFilter);
+  const [carouselViewMode, setCarouselViewMode] = useState<CarouselViewMode>(_lastViewMode);
+
+  const handleSetActiveTab = useCallback((tab: DashboardTab) => {
+    _lastTab = tab;
+    setActiveTab(tab);
+  }, []);
+
+  const handleSetStatusFilter = useCallback((filter: CarouselStatusFilter) => {
+    _lastFilter = filter;
+    setCarouselStatusFilter(filter);
+  }, []);
+
+  const handleSetViewMode = useCallback((mode: CarouselViewMode) => {
+    _lastViewMode = mode;
+    setCarouselViewMode(mode);
+  }, []);
   const [calendarMonth, setCalendarMonth] = useState(() => getMonthStart(new Date()));
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortField, setSortField] = useState<"updatedAt" | "statusDate">("updatedAt");
+
+  const toggleSortOrder = useCallback(() => setSortOrder((s) => (s === "desc" ? "asc" : "desc")), []);
+
+  const handleSortByField = useCallback((field: "updatedAt" | "statusDate") => {
+    setSortField((prev) => {
+      if (prev === field) {
+        setSortOrder((s) => (s === "desc" ? "asc" : "desc"));
+        return prev;
+      }
+      setSortOrder("desc");
+      return field;
+    });
+  }, []);
+
   const postedCarousels = carousels
     .filter((carousel) => !!carousel.postedAt)
-    .sort((a, b) => new Date(b.postedAt ?? 0).getTime() - new Date(a.postedAt ?? 0).getTime());
+    .sort((a, b) => {
+      const da = new Date(a.postedAt ?? 0).getTime();
+      const db = new Date(b.postedAt ?? 0).getTime();
+      return sortOrder === "desc" ? db - da : da - db;
+    });
   const filteredCarousels = carousels.filter((carousel) =>
     carouselStatusFilter === "all" ? true : getCarouselStatus(carousel) === carouselStatusFilter
   );
+  const sortedFilteredCarousels = [...filteredCarousels].sort((a, b) => {
+    const getDate = (c: Carousel) => {
+      if (sortField === "statusDate") {
+        return c.scheduledAt ?? c.postedAt ?? c.updatedAt;
+      }
+      return c.updatedAt;
+    };
+    const da = new Date(getDate(a)).getTime();
+    const db = new Date(getDate(b)).getTime();
+    return sortOrder === "desc" ? db - da : da - db;
+  });
   const scheduledCarousels = carousels
     .filter((carousel) => !!carousel.scheduledAt && !carousel.postedAt)
     .sort((a, b) => new Date(a.scheduledAt ?? 0).getTime() - new Date(b.scheduledAt ?? 0).getTime());
@@ -135,18 +195,18 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (carouselStatusFilter !== "scheduled" && carouselViewMode === "calendar") {
-      setCarouselViewMode("cards");
+      handleSetViewMode("cards");
     }
-  }, [carouselStatusFilter, carouselViewMode]);
+  }, [carouselStatusFilter, carouselViewMode, handleSetViewMode]);
 
   useEffect(() => {
     if (carouselStatusFilter !== "scheduled") return;
     if (scheduledCarousels.length > 0) {
-      setCarouselViewMode("calendar");
+      handleSetViewMode("calendar");
     }
     if (!firstScheduledAt) return;
     setCalendarMonth(getMonthStart(new Date(firstScheduledAt)));
-  }, [carouselStatusFilter, firstScheduledAt, scheduledCarousels.length]);
+  }, [carouselStatusFilter, firstScheduledAt, handleSetViewMode, scheduledCarousels.length]);
 
   const calendarGridStart = new Date(calendarMonth);
   calendarGridStart.setDate(calendarMonth.getDate() - ((calendarMonth.getDay() + 6) % 7));
@@ -173,6 +233,7 @@ export default function DashboardPage() {
       <TopBar
         onSettingsClick={() => setShowBrandSetup(true)}
         onIntegrationsClick={() => setShowIntegrations(true)}
+        claudeAuthenticated={claudeAuthenticated}
       />
 
       <ConfirmDialog
@@ -206,7 +267,7 @@ export default function DashboardPage() {
       />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className={`${activeTab === "planning" ? "w-full max-w-[1280px] px-4 sm:px-6" : "max-w-5xl px-6"} mx-auto py-8`}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold">Open Carrusel</h1>
@@ -222,7 +283,17 @@ export default function DashboardPage() {
 
           <div className="flex gap-1 mb-6 border-b border-border">
             <button
-              onClick={() => setActiveTab("carousels")}
+              onClick={() => handleSetActiveTab("planning")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "planning"
+                  ? "border-accent text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Planning
+            </button>
+            <button
+              onClick={() => handleSetActiveTab("carousels")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "carousels"
                   ? "border-accent text-foreground"
@@ -232,7 +303,7 @@ export default function DashboardPage() {
               My Carousels
             </button>
             <button
-              onClick={() => setActiveTab("templates")}
+              onClick={() => handleSetActiveTab("templates")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "templates"
                   ? "border-accent text-foreground"
@@ -242,7 +313,7 @@ export default function DashboardPage() {
               Templates
             </button>
             <button
-              onClick={() => setActiveTab("posted")}
+              onClick={() => handleSetActiveTab("posted")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "posted"
                   ? "border-accent text-foreground"
@@ -253,9 +324,12 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {activeTab === "templates" ? (
-            <TemplateGallery />
-          ) : activeTab === "posted" ? (
+          <div key={activeTab} className="oc-tab-panel">
+            {activeTab === "planning" ? (
+              <PlanningTab onIntegrationsOpen={() => setShowIntegrations(true)} />
+            ) : activeTab === "templates" ? (
+              <TemplateGallery />
+            ) : activeTab === "posted" ? (
             loading ? (
               <div className="overflow-hidden rounded-2xl border border-border bg-surface">
                 <div className="grid grid-cols-[minmax(0,2fr)_110px_120px_150px_minmax(0,1fr)] gap-4 border-b border-border px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
@@ -292,7 +366,14 @@ export default function DashboardPage() {
                   <span>Carousel</span>
                   <span>Slides</span>
                   <span>Format</span>
-                  <span>Posted</span>
+                  <button
+                    onClick={toggleSortOrder}
+                    className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                    title={sortOrder === "desc" ? "Más reciente primero — click para invertir" : "Más antiguo primero — click para invertir"}
+                  >
+                    Posted
+                    {sortOrder === "desc" ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+                  </button>
                   <span>Instagram</span>
                 </div>
                 {postedCarousels.map((carousel) => (
@@ -313,7 +394,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>Updated {new Date(carousel.updatedAt).toLocaleDateString()}</span>
+                        <span>Updated {fmtDate(carousel.updatedAt)}</span>
                         <span>{carousel.caption ? "Has caption" : "No caption"}</span>
                       </div>
                     </div>
@@ -328,7 +409,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
                       {carousel.postedAt
-                        ? new Date(carousel.postedAt).toLocaleDateString()
+                        ? fmtDate(carousel.postedAt)
                         : "-"}
                     </div>
                     <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
@@ -391,7 +472,7 @@ export default function DashboardPage() {
                   ] as const).map(([value, label]) => (
                     <button
                       key={value}
-                      onClick={() => setCarouselStatusFilter(value)}
+                      onClick={() => handleSetStatusFilter(value)}
                       className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                         carouselStatusFilter === value
                           ? "border-accent bg-accent/10 text-accent"
@@ -401,10 +482,18 @@ export default function DashboardPage() {
                       {label}
                     </button>
                   ))}
+                  <button
+                    onClick={toggleSortOrder}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    title={sortOrder === "desc" ? "Más reciente primero" : "Más antiguo primero"}
+                  >
+                    {sortOrder === "desc" ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowUp className="h-3.5 w-3.5" />}
+                    Fecha
+                  </button>
                 </div>
                 <div className="inline-flex rounded-full border border-border bg-background p-1">
                   <button
-                    onClick={() => setCarouselViewMode("cards")}
+                    onClick={() => handleSetViewMode("cards")}
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                       carouselViewMode === "cards"
                         ? "bg-surface text-foreground shadow-sm"
@@ -415,7 +504,7 @@ export default function DashboardPage() {
                     Tarjetas
                   </button>
                   <button
-                    onClick={() => setCarouselViewMode("list")}
+                    onClick={() => handleSetViewMode("list")}
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                       carouselViewMode === "list"
                         ? "bg-surface text-foreground shadow-sm"
@@ -427,7 +516,7 @@ export default function DashboardPage() {
                   </button>
                   {carouselStatusFilter === "scheduled" ? (
                     <button
-                      onClick={() => setCarouselViewMode("calendar")}
+                      onClick={() => handleSetViewMode("calendar")}
                       className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                         carouselViewMode === "calendar"
                           ? "bg-surface text-foreground shadow-sm"
@@ -580,7 +669,7 @@ export default function DashboardPage() {
                 </div>
               ) : carouselViewMode === "cards" ? (
                 <div className="oc-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredCarousels.map((carousel) => (
+                  {sortedFilteredCarousels.map((carousel) => (
                     <div
                       key={carousel.id}
                       onClick={() => router.push(`/carousel/${carousel.id}`)}
@@ -631,7 +720,7 @@ export default function DashboardPage() {
                         <div className="mt-2">
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
                             <CheckCircle2 className="h-3 w-3" />
-                            Posted {new Date(carousel.postedAt).toLocaleDateString()}
+                            Posted {fmtDate(carousel.postedAt)}
                           </span>
                           {carousel.publishedPostUrl ? (
                             <a
@@ -658,7 +747,7 @@ export default function DashboardPage() {
                         </Badge>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(carousel.updatedAt).toLocaleDateString()}
+                          {fmtDate(carousel.updatedAt)}
                         </span>
                       </div>
                     </div>
@@ -670,11 +759,25 @@ export default function DashboardPage() {
                     <span>Carousel</span>
                     <span>Slides</span>
                     <span>Format</span>
-                    <span>Estado</span>
-                    <span>Update</span>
+                    <button
+                      onClick={() => handleSortByField("statusDate")}
+                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      title="Ordenar por fecha de estado (programado / publicado)"
+                    >
+                      Estado
+                      {sortField === "statusDate" && (sortOrder === "desc" ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />)}
+                    </button>
+                    <button
+                      onClick={() => handleSortByField("updatedAt")}
+                      className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                      title="Ordenar por fecha de última edición"
+                    >
+                      Update
+                      {sortField === "updatedAt" && (sortOrder === "desc" ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />)}
+                    </button>
                     <span>Detalle</span>
                   </div>
-                  {filteredCarousels.map((carousel) => {
+                  {sortedFilteredCarousels.map((carousel) => {
                     const status = getCarouselStatus(carousel);
                     return (
                       <div
@@ -713,7 +816,7 @@ export default function DashboardPage() {
                           ) : status === "posted" && carousel.postedAt ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
                               <CheckCircle2 className="h-3 w-3" />
-                              Posted {new Date(carousel.postedAt).toLocaleDateString()}
+                              Posted {fmtDate(carousel.postedAt)}
                             </span>
                           ) : (
                             <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -722,7 +825,7 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
-                          {new Date(carousel.updatedAt).toLocaleDateString()}
+                          {fmtDate(carousel.updatedAt)}
                         </div>
                         <div className="flex min-w-0 items-center justify-between gap-2">
                           <div className="min-w-0 text-xs text-muted-foreground">
@@ -774,7 +877,8 @@ export default function DashboardPage() {
                 </div>
               )}
             </>
-          )}
+            )}
+          </div>
         </div>
       </main>
     </div>

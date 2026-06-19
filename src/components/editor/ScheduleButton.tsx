@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { fmtDateTime } from "@/lib/utils";
 import { CalendarClock, Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Carousel } from "@/types/carousel";
@@ -117,7 +118,7 @@ export function ScheduleButton({
     setOptimisticScheduledAt(scheduledAt ?? null);
   }, [scheduledAt]);
 
-  const minScheduleDate = useMemo(() => getMinimumScheduleDate(), [open]);
+  const minScheduleDate = useMemo(() => getMinimumScheduleDate(), []);
   const selectedHour = selectedDate.getHours();
   const selectedMinute = selectedDate.getMinutes();
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
@@ -221,12 +222,7 @@ export function ScheduleButton({
   };
 
   if (optimisticScheduledAt) {
-    const label = new Date(optimisticScheduledAt).toLocaleString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const label = fmtDateTime(optimisticScheduledAt);
 
     return (
       <div className="relative flex items-center gap-1">
@@ -301,13 +297,7 @@ export function ScheduleButton({
             </p>
 
             <div className="mb-4 rounded-lg border border-violet-200 bg-violet-500/[0.06] px-3 py-2 text-sm text-violet-900">
-              {selectedDate.toLocaleString("es-AR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {fmtDateTime(selectedDate)}
             </div>
 
             <div className="grid gap-4 md:grid-cols-[1.4fr_0.8fr]">

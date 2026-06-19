@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+if [ -n "$TZ" ] && [ -f "/usr/share/zoneinfo/$TZ" ]; then
+  ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime
+  echo "$TZ" > /etc/timezone
+fi
+
 if [ -f /run/claude-host/claude.json ]; then
   cp /run/claude-host/claude.json /root/.claude.json
 fi

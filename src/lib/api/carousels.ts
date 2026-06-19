@@ -1,5 +1,12 @@
 import { fetchJson, sendJson } from "./client";
-import type { AspectRatio, Carousel, Slide } from "@/types/carousel";
+import type { AspectRatio, Carousel, Slide, PlanningContext } from "@/types/carousel";
+
+interface CreateCarouselOptions {
+  caption?: string;
+  hashtags?: string[];
+  tags?: string[];
+  planning?: PlanningContext | null;
+}
 
 export function listCarousels(): Promise<{ carousels: Carousel[] }> {
   return fetchJson<{ carousels: Carousel[] }>("/api/carousels");
@@ -11,12 +18,16 @@ export function getCarouselById(id: string): Promise<Carousel> {
 
 export function createCarousel(
   name: string,
-  aspectRatio: string
+  aspectRatio: string,
+  options?: CreateCarouselOptions
 ): Promise<Carousel> {
-  return sendJson<Carousel, { name: string; aspectRatio: string }>(
+  return sendJson<
+    Carousel,
+    { name: string; aspectRatio: string } & CreateCarouselOptions
+  >(
     "/api/carousels",
     "POST",
-    { name, aspectRatio }
+    { name, aspectRatio, ...options }
   );
 }
 

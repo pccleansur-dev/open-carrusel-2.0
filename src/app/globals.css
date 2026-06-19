@@ -142,6 +142,15 @@ body {
   }
 }
 
+@keyframes oc-tab-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.oc-tab-panel {
+  animation: oc-tab-panel-in 220ms var(--ease-out-strong);
+}
+
 /* Stagger for initial card grid — uses animation-fill-mode: backwards so hover/active transforms take over after mount completes */
 .oc-stagger > * {
   animation: oc-stagger-in 280ms var(--ease-out-strong) backwards;
@@ -205,7 +214,8 @@ body {
     animation-duration: 0.01ms !important;
   }
   .oc-stagger > *,
-  .oc-slide-in {
+  .oc-slide-in,
+  .oc-tab-panel {
     animation: none !important;
   }
   .oc-enter,

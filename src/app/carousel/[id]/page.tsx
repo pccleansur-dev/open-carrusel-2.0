@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, use } from "react";
+import { fmtDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,8 +9,12 @@ import {
   Grid3X3,
   Bookmark,
   Maximize2,
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   ExternalLink,
+  Copy,
+  CalendarClock,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +25,6 @@ import { SlideFilmstrip } from "@/components/editor/SlideFilmstrip";
 import { AspectRatioSelector } from "@/components/editor/AspectRatioSelector";
 import { ExportButton } from "@/components/editor/ExportButton";
 import { CaptionPanel } from "@/components/editor/CaptionPanel";
-import { SafeZoneOverlay } from "@/components/editor/SafeZoneOverlay";
 import { FullscreenPreview } from "@/components/editor/FullscreenPreview";
 import { PublishButton } from "@/components/editor/PublishButton";
 import { ScheduleButton } from "@/components/editor/ScheduleButton";
@@ -37,10 +41,14 @@ export default function CarouselEditorPage({ params }: PageProps) {
   const [notFound, setNotFound] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [claudeAvailable, setClaudeAvailable] = useState(true);
+  const [claudeStatusMessage, setClaudeStatusMessage] = useState("");
+  const [claudeReloginCommand, setClaudeReloginCommand] = useState("");
+  const [claudeReloginHelpUrl, setClaudeReloginHelpUrl] = useState("");
   const [chatOpen, setChatOpen] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSafeZones, setShowSafeZones] = useState(false);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const [planningExpanded, setPlanningExpanded] = useState(true);
 
   // Confirm dialog state
   const [confirmState, setConfirmState] = useState<{
@@ -52,6 +60,29 @@ export default function CarouselEditorPage({ params }: PageProps) {
 
   // Ref for focusing chat input when + button is clicked
   const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const refreshClaudeStatus = useCallback(async (forceFresh = false) => {
+    try {
+      const res = await fetch(
+        forceFresh ? "/api/chat/check?force=1" : "/api/chat/check",
+        { cache: "no-store" }
+      );
+      const data: {
+        available?: boolean;
+        authenticated?: boolean;
+        message?: string;
+        reloginCommand?: string;
+        reloginHelpUrl?: string;
+      } = await res.json();
+      const ready = data.available !== false && data.authenticated !== false;
+      setClaudeAvailable(ready);
+      setClaudeStatusMessage(data.message || "");
+      setClaudeReloginCommand(data.reloginCommand || "");
+      setClaudeReloginHelpUrl(data.reloginHelpUrl || "");
+    } catch {
+      // ignore and keep current state
+    }
+  }, []);
 
   const fetchCarousel = useCallback(async () => {
     try {
@@ -83,16 +114,10 @@ export default function CarouselEditorPage({ params }: PageProps) {
   useEffect(() => {
     const load = async () => {
       await fetchCarousel();
-      try {
-        const res = await fetch("/api/chat/check");
-        const data: { available?: boolean } = await res.json();
-        if (data.available === false) setClaudeAvailable(false);
-      } catch {
-        // assume available
-      }
+      await refreshClaudeStatus();
     };
     load();
-  }, [fetchCarousel]);
+  }, [fetchCarousel, refreshClaudeStatus]);
 
   // Poll for carousel updates while AI is generating slides
   useEffect(() => {
@@ -251,6 +276,10 @@ export default function CarouselEditorPage({ params }: PageProps) {
             <ChatPanel
               carouselId={id}
               claudeAvailable={claudeAvailable}
+              claudeStatusMessage={claudeStatusMessage}
+              claudeReloginCommand={claudeReloginCommand}
+              claudeReloginHelpUrl={claudeReloginHelpUrl}
+              onRetryClaudeCheck={() => refreshClaudeStatus(true)}
               referenceImages={carousel.referenceImages || []}
               onStreamStart={handleStreamStart}
               onStreamEnd={handleStreamEnd}
@@ -261,6 +290,99 @@ export default function CarouselEditorPage({ params }: PageProps) {
 
         {/* Right side: toolbar + preview */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
+          {carousel.planning ? (
+            <div className="border-b border-border bg-amber-50/70 px-4 py-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-900">
+                      <CalendarClock className="h-3.5 w-3.5" />
+                      Creado desde planning
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPlanningExpanded((current) => !current)}
+                      className="h-7 px-2 text-[11px]"
+                    >
+                      {planningExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      {planningExpanded ? "Replegar" : "Desplegar"}
+                    </Button>
+                  </div>
+                  <h2 className="mt-2 text-sm font-semibold text-foreground">
+                    {carousel.planning.title}
+                  </h2>
+                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    {carousel.planning.status ? (
+                      <span>Estado: {carousel.planning.status}</span>
+                    ) : null}
+                    {carousel.planning.scheduledFor ? (
+                      <span>Fecha editorial: {carousel.planning.scheduledFor}</span>
+                    ) : null}
+                    {carousel.planning.network ? (
+                      <span>Red: {carousel.planning.network}</span>
+                    ) : null}
+                    {carousel.planning.sourceUrl ? (
+                      <a
+                        href={carousel.planning.sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-accent hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Abrir source
+                      </a>
+                    ) : null}
+                  </div>
+                  {planningExpanded ? (
+                    <div className="oc-fade">
+                      {carousel.planning.promptSlides ? (
+                        <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
+                          <span className="font-medium">Prompt:</span> {carousel.planning.promptSlides}
+                        </p>
+                      ) : null}
+                      {carousel.planning.copy ? (
+                        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">Copy:</span> {carousel.planning.copy}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                {planningExpanded ? (
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {carousel.planning.promptSlides ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(carousel.planning?.promptSlides || "");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copiar prompt
+                    </Button>
+                  ) : null}
+                  {carousel.planning.copy ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(carousel.planning?.copy || "");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copiar copy
+                    </Button>
+                  ) : null}
+                </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {/* Toolbar */}
           <div className="h-11 border-b border-border bg-surface flex items-center px-4 gap-3 shrink-0">
             <AspectRatioSelector
@@ -327,7 +449,7 @@ export default function CarouselEditorPage({ params }: PageProps) {
               <div className="flex items-center gap-2">
                 <div
                   className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700"
-                  title={`Publicado el ${new Date(carousel.postedAt).toLocaleString()}`}
+                  title={`Publicado el ${fmtDateTime(carousel.postedAt)}`}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   <span>Publicado</span>

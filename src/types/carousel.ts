@@ -16,6 +16,22 @@ export interface ReferenceImage {
   addedAt: string;
 }
 
+export interface PlanningContext {
+  rowId: string;
+  title: string;
+  status?: string;
+  scheduledFor?: string;
+  promptSlides?: string;
+  copy?: string;
+  hashtags?: string[];
+  network?: string;
+  image?: string;
+  fileId?: string;
+  driveId?: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
+}
+
 export interface Carousel {
   id: string;
   name: string;
@@ -25,10 +41,13 @@ export interface Carousel {
   caption?: string;
   hashtags?: string[];
   scheduledAt?: string | null;
+  scheduledProvider?: "local" | "postwiz" | null;
+  scheduledExternalPostId?: string | null;
   postedAt?: string | null;
   publishedPostId?: string | null;
   publishedPostUrl?: string | null;
   chatSessionId: string | null;
+  planning?: PlanningContext | null;
   isTemplate: boolean;
   tags: string[];
   createdAt: string;

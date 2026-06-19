@@ -1,16 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Check, Loader2, Webhook, Hash, FolderOpen } from "lucide-react";
+import { X, Check, Loader2, Webhook, Hash, FolderOpen, TableProperties, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface IntegrationsConfig {
+  publishProvider: "make" | "postwiz";
   makeWebhookUrl: string;
   igUserId: string;
   postsDirectory: string;
   makeResponsePostIdPath: string;
   makeResponsePostUrlPath: string;
+  postwizBaseUrl: string;
+  postwizApiKey: string;
+  postwizIntegrationId: string;
+  postwizInstagramEnabled: boolean;
+  postwizFacebookEnabled: boolean;
+  postwizFacebookIntegrationId: string;
+  postwizFacebookUrl: string;
+  postwizProviderType: "instagram" | "instagram-standalone";
+  postwizPostType: "post" | "story";
+  googleSheetsCsvUrl: string;
   effectivePostsDirectory?: string;
   dockerPostsDirectoryHost?: string;
 }
@@ -21,11 +32,22 @@ interface IntegrationsPanelProps {
 }
 
 const EMPTY_CONFIG: IntegrationsConfig = {
+  publishProvider: "make",
   makeWebhookUrl: "",
   igUserId: "",
   postsDirectory: "",
   makeResponsePostIdPath: "",
   makeResponsePostUrlPath: "",
+  postwizBaseUrl: "https://postwiz.wizzi.com.ar/api/public/v1",
+  postwizApiKey: "",
+  postwizIntegrationId: "",
+  postwizInstagramEnabled: true,
+  postwizFacebookEnabled: false,
+  postwizFacebookIntegrationId: "",
+  postwizFacebookUrl: "",
+  postwizProviderType: "instagram",
+  postwizPostType: "post",
+  googleSheetsCsvUrl: "",
 };
 
 export function IntegrationsPanel({ open, onClose }: IntegrationsPanelProps) {
@@ -65,7 +87,7 @@ export function IntegrationsPanel({ open, onClose }: IntegrationsPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-xl">
+      <div className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-surface p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-base font-semibold">Integraciones</h2>
           <button
@@ -77,6 +99,243 @@ export function IntegrationsPanel({ open, onClose }: IntegrationsPanelProps) {
         </div>
 
         <div className="space-y-5">
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Send className="h-3.5 w-3.5" />
+              Proveedor de publicacion
+            </label>
+            <select
+              value={config.publishProvider}
+              onChange={(event) =>
+                setConfig((current) => ({
+                  ...current,
+                  publishProvider: event.target.value === "postwiz" ? "postwiz" : "make",
+                }))
+              }
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="postwiz">PostWiz / Postiz</option>
+              <option value="make">Make webhook</option>
+            </select>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              PostWiz programa directamente en tu VPS. Make conserva el flujo anterior.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border p-3">
+            <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Send className="h-3.5 w-3.5" />
+              PostWiz / Postiz
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                  API base URL
+                </label>
+                <Input
+                  value={config.postwizBaseUrl}
+                  onChange={(event) =>
+                    setConfig((current) => ({
+                      ...current,
+                      postwizBaseUrl: event.target.value,
+                    }))
+                  }
+                  placeholder="https://postwiz.wizzi.com.ar/api/public/v1"
+                  className="font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                  API key
+                </label>
+                <Input
+                  value={config.postwizApiKey}
+                  onChange={(event) =>
+                    setConfig((current) => ({
+                      ...current,
+                      postwizApiKey: event.target.value,
+                    }))
+                  }
+                  placeholder="Token creado en PostWiz"
+                  className="font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <input
+                    id="postwiz-instagram-enabled"
+                    type="checkbox"
+                    checked={config.postwizInstagramEnabled}
+                    onChange={(event) =>
+                      setConfig((current) => ({
+                        ...current,
+                        postwizInstagramEnabled: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-border"
+                  />
+                  <label
+                    htmlFor="postwiz-instagram-enabled"
+                    className="text-[11px] font-medium text-muted-foreground"
+                  >
+                    Publicar en Instagram
+                  </label>
+                </div>
+                {config.postwizInstagramEnabled ? (
+                  <>
+                    <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                      Instagram Integration ID
+                    </label>
+                    <Input
+                      value={config.postwizIntegrationId}
+                      onChange={(event) =>
+                        setConfig((current) => ({
+                          ...current,
+                          postwizIntegrationId: event.target.value,
+                        }))
+                      }
+                      placeholder="ID de tu canal Instagram"
+                      className="font-mono text-xs"
+                    />
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      Se obtiene con GET /api/public/v1/integrations usando tu API key.
+                    </p>
+                  </>
+                ) : null}
+              </div>
+
+              {config.postwizInstagramEnabled ? (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                    Tipo de canal
+                  </label>
+                  <select
+                    value={config.postwizProviderType}
+                    onChange={(event) =>
+                      setConfig((current) => ({
+                        ...current,
+                        postwizProviderType:
+                          event.target.value === "instagram-standalone"
+                            ? "instagram-standalone"
+                            : "instagram",
+                      }))
+                    }
+                    className="w-full rounded-md border border-border bg-background px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-accent"
+                  >
+                    <option value="instagram">Instagram</option>
+                    <option value="instagram-standalone">Instagram standalone</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                    Formato
+                  </label>
+                  <select
+                    value={config.postwizPostType}
+                    onChange={(event) =>
+                      setConfig((current) => ({
+                        ...current,
+                        postwizPostType: event.target.value === "story" ? "story" : "post",
+                      }))
+                    }
+                    className="w-full rounded-md border border-border bg-background px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-accent"
+                  >
+                    <option value="post">Post</option>
+                    <option value="story">Story</option>
+                  </select>
+                </div>
+              </div>
+              ) : null}
+
+              <div className="rounded-md border border-border/80 p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <input
+                    id="postwiz-facebook-enabled"
+                    type="checkbox"
+                    checked={config.postwizFacebookEnabled}
+                    onChange={(event) =>
+                      setConfig((current) => ({
+                        ...current,
+                        postwizFacebookEnabled: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-border"
+                  />
+                  <label
+                    htmlFor="postwiz-facebook-enabled"
+                    className="text-[11px] font-medium text-muted-foreground"
+                  >
+                    Publicar tambien en Facebook
+                  </label>
+                </div>
+
+                {config.postwizFacebookEnabled ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                        Facebook Integration ID
+                      </label>
+                      <Input
+                        value={config.postwizFacebookIntegrationId}
+                        onChange={(event) =>
+                          setConfig((current) => ({
+                            ...current,
+                            postwizFacebookIntegrationId: event.target.value,
+                          }))
+                        }
+                        placeholder="ID de tu pagina/canal Facebook"
+                        className="font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                        URL opcional para Facebook
+                      </label>
+                      <Input
+                        value={config.postwizFacebookUrl}
+                        onChange={(event) =>
+                          setConfig((current) => ({
+                            ...current,
+                            postwizFacebookUrl: event.target.value,
+                          }))
+                        }
+                        placeholder="https://..."
+                        className="font-mono text-xs"
+                      />
+                      <p className="mt-1 text-[10px] text-muted-foreground">
+                        Si la dejas vacia, Facebook recibe solo copy e imagenes.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <TableProperties className="h-3.5 w-3.5" />
+              Google Sheets URL
+            </label>
+            <Input
+              value={config.googleSheetsCsvUrl}
+              onChange={(event) =>
+                setConfig((current) => ({
+                  ...current,
+                  googleSheetsCsvUrl: event.target.value,
+                }))
+              }
+              placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0"
+              className="font-mono text-xs"
+            />
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Pega la URL normal de la pestaña de planning. La app convierte sola el link a CSV para leerlo en vivo.
+            </p>
+          </div>
+
           <div>
             <label className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <Webhook className="h-3.5 w-3.5" />

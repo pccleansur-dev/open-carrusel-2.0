@@ -52,7 +52,6 @@ export function PublishButton({
     } catch (error) {
       setErrorMsg(error instanceof Error ? error.message : "Error desconocido");
       setStatus("error");
-      setTimeout(() => setStatus("idle"), 5000);
     }
   };
 
@@ -64,8 +63,8 @@ export function PublishButton({
         : isScheduled
           ? "Publicar ahora sin esperar la hora programada"
           : hasBeenPublished
-            ? "Volver a publicar carrusel en Instagram via Make"
-            : "Publicar carrusel en Instagram via Make";
+            ? "Volver a publicar carrusel en Instagram"
+            : "Publicar carrusel en Instagram";
 
   return (
     <div className="relative">
@@ -109,8 +108,21 @@ export function PublishButton({
       </Button>
 
       {status === "error" && errorMsg ? (
-        <div className="absolute right-0 top-full z-50 mt-1 w-64 rounded-md bg-destructive px-3 py-2 text-xs text-destructive-foreground shadow-lg">
-          {errorMsg}
+        <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-md bg-destructive px-3 py-2 text-xs text-destructive-foreground shadow-lg">
+          <div className="flex items-start justify-between gap-2">
+            <span className="leading-5">{errorMsg}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setErrorMsg("");
+                setStatus("idle");
+              }}
+              className="shrink-0 rounded p-0.5 transition-colors hover:bg-black/10"
+              aria-label="Cerrar error"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       ) : null}
     </div>

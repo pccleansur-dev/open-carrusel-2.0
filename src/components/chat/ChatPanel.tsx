@@ -17,6 +17,10 @@ interface ChatPanelProps {
   carouselId: string;
   referenceImages?: ReferenceImage[];
   claudeAvailable: boolean;
+  claudeStatusMessage?: string;
+  claudeReloginCommand?: string;
+  claudeReloginHelpUrl?: string;
+  onRetryClaudeCheck?: () => Promise<void> | void;
   onStreamStart?: () => void;
   onStreamEnd?: () => void;
   chatInputRef?: React.RefObject<HTMLTextAreaElement | null>;
@@ -25,6 +29,10 @@ interface ChatPanelProps {
 export function ChatPanel({
   carouselId,
   claudeAvailable,
+  claudeStatusMessage,
+  claudeReloginCommand,
+  claudeReloginHelpUrl,
+  onRetryClaudeCheck,
   referenceImages = [],
   onStreamStart,
   onStreamEnd,
@@ -34,8 +42,11 @@ export function ChatPanel({
   const [isStreaming, setIsStreaming] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copiedLoginCommand, setCopiedLoginCommand] = useState(false);
+  const [retryingClaudeCheck, setRetryingClaudeCheck] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const autoPromptStartedRef = useRef(false);
 
   // Load session ID and chat history from localStorage
   useEffect(() => {
@@ -72,12 +83,37 @@ export function ChatPanel({
     abortRef.current?.abort();
   }, []);
 
+  const handleRelogin = useCallback(async () => {
+    setCopiedLoginCommand(true);
+    try {
+      await fetch("/api/relogin", { method: "POST" });
+    } finally {
+      setTimeout(() => setCopiedLoginCommand(false), 3000);
+    }
+  }, []);
+
+  const handleRetryClaudeCheck = useCallback(async () => {
+    if (!onRetryClaudeCheck) return;
+    setRetryingClaudeCheck(true);
+    try {
+      await onRetryClaudeCheck();
+    } finally {
+      setRetryingClaudeCheck(false);
+    }
+  }, [onRetryClaudeCheck]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (claudeAvailable) {
+      setError(null);
+    }
+  }, [claudeAvailable]);
 
   const handleSend = useCallback(
     async (message: string) => {
@@ -228,22 +264,63 @@ export function ChatPanel({
     [isStreaming, sessionId, carouselId, onStreamStart, onStreamEnd, persistMessages]
   );
 
+  useEffect(() => {
+    if (autoPromptStartedRef.current || isStreaming) return;
+
+    const stored = localStorage.getItem(`planning-autostart-${carouselId}`);
+    if (!stored) return;
+
+    try {
+      const data = JSON.parse(stored) as { prompt?: string };
+      if (!data.prompt?.trim()) {
+        localStorage.removeItem(`planning-autostart-${carouselId}`);
+        return;
+      }
+
+      autoPromptStartedRef.current = true;
+      localStorage.removeItem(`planning-autostart-${carouselId}`);
+      void handleSend(data.prompt);
+    } catch {
+      localStorage.removeItem(`planning-autostart-${carouselId}`);
+    }
+  }, [carouselId, handleSend, isStreaming]);
+
   if (!claudeAvailable) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 text-center">
         <Plug className="h-10 w-10 text-muted-foreground mb-3" />
-        <h3 className="font-semibold text-sm mb-1">Connect Claude CLI</h3>
-        <p className="text-xs text-muted-foreground max-w-[200px]">
-          Install Claude CLI to enable AI-powered carousel creation.{" "}
+        <h3 className="font-semibold text-sm mb-1">Claude no esta listo</h3>
+        <p className="text-xs text-muted-foreground max-w-[240px]">
+          {claudeStatusMessage?.trim() || "Claude CLI no esta disponible en este entorno."}
+        </p>
+        {claudeReloginCommand ? (
+          <button
+            onClick={() => void handleRelogin()}
+            disabled={copiedLoginCommand}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+          >
+            {copiedLoginCommand ? "Abriendo terminal..." : "Relogear"}
+          </button>
+        ) : null}
+        {claudeReloginHelpUrl ? (
           <a
-            href="https://docs.anthropic.com/en/docs/claude-code"
+            href={claudeReloginHelpUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent underline"
+            className="mt-3 text-xs text-accent underline"
           >
-            Install guide
+            Guia de login
           </a>
-        </p>
+        ) : null}
+        {onRetryClaudeCheck ? (
+          <button
+            onClick={() => void handleRetryClaudeCheck()}
+            disabled={retryingClaudeCheck}
+            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+          >
+            {retryingClaudeCheck ? "Revalidando..." : "Ya hice login, revalidar"}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -295,9 +372,22 @@ export function ChatPanel({
           />
         ))}
         {error && (
-          <div className="mx-4 my-2 flex items-center gap-2 text-destructive text-xs bg-destructive/10 rounded-lg p-3">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            {error}
+          <div className="mx-4 my-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+            {(/401|authentication credentials|authenticate/i.test(error) && claudeReloginCommand) ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => void handleRelogin()}
+                  disabled={copiedLoginCommand}
+                  className="inline-flex items-center gap-2 rounded-md border border-destructive/20 bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                >
+                  {copiedLoginCommand ? "Abriendo terminal..." : "Relogear"}
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Settings, Layers, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ interface TopBarProps {
   onTitleChange?: (newTitle: string) => void;
   onSettingsClick?: () => void;
   onIntegrationsClick?: () => void;
+  claudeAuthenticated?: boolean;
 }
 
 export function TopBar({
@@ -21,9 +22,20 @@ export function TopBar({
   onTitleChange,
   onSettingsClick,
   onIntegrationsClick,
+  claudeAuthenticated,
 }: TopBarProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
+  const [relogging, setRelogging] = useState(false);
+
+  const handleRelogin = useCallback(async () => {
+    setRelogging(true);
+    try {
+      await fetch("/api/relogin", { method: "POST" });
+    } finally {
+      setTimeout(() => setRelogging(false), 3000);
+    }
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const startEditing = () => {
@@ -82,6 +94,24 @@ export function TopBar({
         )}
       </div>
       <div className="flex-1" />
+      {claudeAuthenticated === undefined ? (
+        <span
+          title="Verificando Claude..."
+          className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted-foreground/30 animate-pulse"
+        />
+      ) : claudeAuthenticated ? (
+        <span
+          title="Claude conectado"
+          className="h-2.5 w-2.5 rounded-full shrink-0 bg-green-500"
+        />
+      ) : (
+        <button
+          onClick={() => void handleRelogin()}
+          disabled={relogging}
+          title={relogging ? "Abriendo terminal de login..." : "Claude desconectado — click para relogear"}
+          className="h-2.5 w-2.5 rounded-full shrink-0 bg-red-500 hover:bg-red-400 transition-colors disabled:opacity-50 cursor-pointer"
+        />
+      )}
       {onIntegrationsClick && (
         <Button
           variant="ghost"

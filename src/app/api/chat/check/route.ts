@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { isClaudeAvailable } from "@/lib/claude-path";
+import { getClaudeRuntimeStatus } from "@/lib/claude-path";
 
-export async function GET() {
-  return NextResponse.json({ available: isClaudeAvailable() });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const forceFresh = searchParams.get("force") === "1";
+  return NextResponse.json(getClaudeRuntimeStatus(forceFresh));
 }

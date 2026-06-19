@@ -12,3 +12,23 @@ export function generateId(): string {
 export function now(): string {
   return new Date().toISOString();
 }
+
+const DATE_LOCALE = "es-AR";
+
+export function fmtDate(value: string | Date): string {
+  return new Date(value).toLocaleDateString(DATE_LOCALE, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+}
+
+export function fmtDateTime(value: string | Date): string {
+  return new Date(value).toLocaleString(DATE_LOCALE, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

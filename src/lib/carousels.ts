@@ -1,6 +1,13 @@
 import { readDataSafe, writeData } from "./data";
 import { generateId, now } from "./utils";
-import type { Carousel, CarouselsData, Slide, AspectRatio, ReferenceImage } from "@/types/carousel";
+import type {
+  Carousel,
+  CarouselsData,
+  Slide,
+  AspectRatio,
+  ReferenceImage,
+  PlanningContext,
+} from "@/types/carousel";
 import { MAX_SLIDES, MAX_VERSIONS } from "@/types/carousel";
 
 const FILE = "carousels.json";
@@ -25,7 +32,10 @@ export async function getCarousel(id: string): Promise<Carousel | null> {
 
 export async function createCarousel(
   name: string,
-  aspectRatio: AspectRatio
+  aspectRatio: AspectRatio,
+  initialData?: Partial<Pick<Carousel, "caption" | "hashtags" | "scheduledAt" | "tags">> & {
+    planning?: PlanningContext | null;
+  }
 ): Promise<Carousel> {
   const data = await load();
   const timestamp = now();
@@ -35,13 +45,18 @@ export async function createCarousel(
     aspectRatio,
     slides: [],
     referenceImages: [],
-    scheduledAt: null,
     postedAt: null,
     publishedPostId: null,
     publishedPostUrl: null,
     chatSessionId: null,
+    caption: initialData?.caption?.trim() || undefined,
+    hashtags: initialData?.hashtags?.length ? initialData.hashtags : undefined,
+    scheduledAt: initialData?.scheduledAt ?? null,
+    scheduledProvider: null,
+    scheduledExternalPostId: null,
+    planning: initialData?.planning ?? null,
     isTemplate: false,
-    tags: [],
+    tags: initialData?.tags ?? [],
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -57,6 +72,7 @@ export async function listScheduledCarousels(): Promise<Carousel[]> {
     (carousel) =>
       !carousel.isTemplate &&
       carousel.scheduledAt != null &&
+      carousel.scheduledProvider !== "postwiz" &&
       !carousel.postedAt &&
       carousel.scheduledAt <= currentTime
   );
@@ -74,6 +90,8 @@ export async function updateCarousel(
       | "caption"
       | "hashtags"
       | "scheduledAt"
+      | "scheduledProvider"
+      | "scheduledExternalPostId"
       | "postedAt"
       | "publishedPostId"
       | "publishedPostUrl"
@@ -106,6 +124,8 @@ export async function duplicateCarousel(id: string): Promise<Carousel | null> {
     referenceImages: [...(source.referenceImages || [])],
     chatSessionId: null,
     scheduledAt: null,
+    scheduledProvider: null,
+    scheduledExternalPostId: null,
     postedAt: null,
     publishedPostId: null,
     publishedPostUrl: null,

@@ -88,7 +88,7 @@ export async function uploadPublishedImage(buffer: Buffer, filename: string) {
   const response = await fetch("https://uguu.se/upload", {
     method: "POST",
     body: formData,
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(60_000),
   });
 
   if (!response.ok) {
@@ -125,6 +125,7 @@ export async function parsePublishResponse(
         explicitPostId ??
         findFirstStringByKeys(payload, [
           "id",
+          "postId",
           "post_id",
           "media_id",
           "creation_id",
